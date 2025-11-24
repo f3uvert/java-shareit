@@ -20,7 +20,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
-        // Проверяем, что пользователь существует
+        if (itemDto.getAvailable() == null) {
+            throw new IllegalArgumentException("Available cannot be null");
+        }
+
         userService.getUserById(ownerId);
 
         User owner = new User();

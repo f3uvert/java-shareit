@@ -9,7 +9,7 @@ public class ItemMapper {
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.getAvailable(),
+                item.getAvailable(),  // ← Должен быть Boolean, не primitive!
                 item.getRequest() != null ? item.getRequest().getId() : null
         );
     }
@@ -19,7 +19,7 @@ public class ItemMapper {
         item.setId(itemDto.getId());
         item.setName(itemDto.getName());
         item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
+        item.setAvailable(itemDto.getAvailable());  // ← Boolean, может быть null
         return item;
     }
 }
