@@ -24,12 +24,11 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBadRequest(IllegalArgumentException e) {
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflict(IllegalArgumentException e) {
         return new ErrorResponse(e.getMessage());
     }
 
-    // Добавляем обработчик для валидации
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
