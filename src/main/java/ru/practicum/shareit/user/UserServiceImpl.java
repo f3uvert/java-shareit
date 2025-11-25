@@ -4,56 +4,41 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
-
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
-    private final Map<Long, User> users = new HashMap<>();
-    private final Map<String, Long> emailToUserId = new HashMap<>();
-    private final AtomicLong idCounter = new AtomicLong(1);
+    private final UserRepository userRepository;
 
     @Override
     public UserDto createUser(UserDto userDto) {
         log.info("Creating user with email: {}", userDto.getEmail());
 
-        String emailLower = userDto.getEmail().toLowerCase().trim();
-        log.info("Checking email uniqueness: {}", emailLower);
-        log.info("Existing emails: {}", emailToUserId.keySet());
-
-        if (emailToUserId.containsKey(emailLower)) {
-            log.warn("Email already exists: {}", emailLower);
+        if (userRepository.findByEmail(userDto.getEmail().toLowerCase().trim()).isPresent()) {
             throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
         }
 
         User user = UserMapper.toUser(userDto);
-        user.setId(idCounter.getAndIncrement());
-        users.put(user.getId(), user);
-        emailToUserId.put(emailLower, user.getId());
+        User savedUser = userRepository.save(user);
+        log.info("User created successfully with id: {}", savedUser.getId());
 
-        log.info("User created successfully with id: {}", user.getId());
-        return UserMapper.toUserDto(user);
+        return UserMapper.toUserDto(savedUser);
     }
 
     @Override
     public UserDto updateUser(Long userId, UserDto userDto) {
-        User existingUser = users.get(userId);
-        if (existingUser == null) {
-            throw new NoSuchElementException("User not found with id: " + userId);
-        }
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
 
         if (userDto.getEmail() != null && !userDto.getEmail().equals(existingUser.getEmail())) {
             String newEmail = userDto.getEmail().toLowerCase().trim();
-            if (emailToUserId.containsKey(newEmail)) {
+            if (userRepository.findByEmail(newEmail).isPresent()) {
                 throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
             }
-
-            emailToUserId.remove(existingUser.getEmail().toLowerCase().trim());
-            emailToUserId.put(newEmail, userId);
             existingUser.setEmail(userDto.getEmail());
         }
 
@@ -61,34 +46,29 @@ public class UserServiceImpl implements UserService {
             existingUser.setName(userDto.getName());
         }
 
-        users.put(userId, existingUser);
-        return UserMapper.toUserDto(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+        return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        User user = users.get(userId);
-        if (user == null) {
-            throw new NoSuchElementException("User not found with id: " + userId);
-        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return users.values().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deleteUser(Long userId) {
-        User user = users.get(userId);
-        if (user == null) {
+        if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User not found with id: " + userId);
         }
-
-        emailToUserId.remove(user.getEmail().toLowerCase().trim());
-        users.remove(userId);
+        userRepository.deleteById(userId);
     }
 }
