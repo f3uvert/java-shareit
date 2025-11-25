@@ -50,13 +50,35 @@ CREATE TABLE IF NOT EXISTS comments (
   CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id)
 );
 
-INSERT INTO users (id, name, email) VALUES
-(1, 'Owner', 'owner@test.com'),
-(2, 'Booker', 'booker@test.com'),
-(3, 'Wrong User', 'wrong@test.com');
+INSERT INTO users (id, name, email) VALUES 
+(1, 'Owner User', 'owner@example.com'),
+(2, 'Booker User', 'booker@example.com'),
+(3, 'Wrong User', 'wrong@example.com'),
+(4, 'Test User 1', 'test1@example.com'),
+(5, 'Test User 2', 'test2@example.com'),
+(6, 'Test User 3', 'test3@example.com'),
+(7, 'Test User 4', 'test4@example.com'),
+(8, 'Test User 5', 'test5@example.com');
 
-INSERT INTO items (id, name, description, is_available, owner_id) VALUES
-(1, 'Test Item', 'Test Desc', true, 1);
+INSERT INTO items (id, name, description, is_available, owner_id) VALUES 
+(1, 'Test Item 1', 'Test Description 1', true, 1),
+(2, 'Test Item 2', 'Test Description 2', true, 1),
+(3, 'Test Item 3', 'Test Description 3', false, 1),
+(4, 'Searchable Item', 'This item can be found by search', true, 4),
+(5, 'Unavailable Item', 'This item is not available', false, 4),
+(6, 'Another Item', 'Another test item', true, 5),
+(7, 'Item for Booker', 'Item for booking tests', true, 1),
+(8, 'Item for Update', 'Item for update tests', true, 6);
 
-INSERT INTO users (id, name, email) VALUES
-(1, 'Owner User', 'owner@example.com');
+INSERT INTO bookings (id, start_date, end_date, item_id, booker_id, status) VALUES 
+(1, '2025-11-26T10:00:00', '2025-11-27T10:00:00', 1, 2, 'WAITING'),
+(2, '2025-11-28T10:00:00', '2025-11-29T10:00:00', 1, 3, 'APPROVED'),
+(3, '2025-11-20T10:00:00', '2025-11-21T10:00:00', 1, 2, 'REJECTED');
+
+INSERT INTO requests (id, description, requestor_id, created) VALUES 
+(1, 'Need a drill for home repair', 2, '2025-11-25T10:00:00'),
+(2, 'Looking for a camera for weekend', 3, '2025-11-25T11:00:00');
+
+INSERT INTO comments (id, text, item_id, author_id, created) VALUES 
+(1, 'Great item, thanks!', 1, 2, '2025-11-25T12:00:00'),
+(2, 'Very useful, will book again', 1, 3, '2025-11-25T13:00:00');
