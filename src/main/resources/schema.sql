@@ -57,3 +57,6 @@ INSERT INTO users (id, name, email) VALUES
 
 INSERT INTO items (id, name, description, is_available, owner_id) VALUES
 (1, 'Test Item', 'Test Desc', true, 1);
+
+INSERT INTO users (id, name, email) VALUES
+(1, 'Owner User', 'owner@example.com');
