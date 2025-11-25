@@ -49,3 +49,11 @@ CREATE TABLE IF NOT EXISTS comments (
   CONSTRAINT fk_comment_item FOREIGN KEY (item_id) REFERENCES items(id),
   CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id)
 );
+
+INSERT INTO users (id, name, email) VALUES
+(1, 'Owner', 'owner@test.com'),
+(2, 'Booker', 'booker@test.com'),
+(3, 'Wrong User', 'wrong@test.com');
+
+INSERT INTO items (id, name, description, is_available, owner_id) VALUES
+(1, 'Test Item', 'Test Desc', true, 1);

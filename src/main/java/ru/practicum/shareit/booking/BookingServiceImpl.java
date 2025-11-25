@@ -28,18 +28,14 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
-        // Проверяем существование пользователя
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
-        // Получаем вещь
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + bookingDto.getItemId()));
 
-        // Проверки валидации
         validateBookingCreation(bookingDto, bookerId, item);
 
-        // Создаем бронирование
         Booking booking = new Booking();
         booking.setStart(bookingDto.getStart());
         booking.setEnd(bookingDto.getEnd());
@@ -182,7 +178,6 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("Start date cannot be in the past");
         }
 
-        // Проверка пересечения с существующими бронированиями
         if (bookingRepository.existsApprovedBookingForItemInPeriod(
                 item.getId(), bookingDto.getStart(), bookingDto.getEnd())) {
             throw new ValidationException("Item is already booked for this period");
