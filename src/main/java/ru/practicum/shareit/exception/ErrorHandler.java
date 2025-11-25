@@ -1,5 +1,6 @@
 package ru.practicum.shareit.exception;
 
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -27,10 +28,10 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflict(IllegalArgumentException e) {
-        log.error("Conflict: {}", e.getMessage());
+    @ExceptionHandler({IllegalArgumentException.class, ValidationException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(Exception e) {
+        log.error("Bad request: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
@@ -43,5 +44,12 @@ public class ErrorHandler {
                 .orElse("Validation error");
         log.error("Validation error: {}", errorMessage);
         return new ErrorResponse(errorMessage);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalError(Exception e) {
+        log.error("Internal server error: ", e);
+        return new ErrorResponse("Internal server error");
     }
 }
