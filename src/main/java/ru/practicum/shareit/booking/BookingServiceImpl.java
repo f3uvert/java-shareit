@@ -54,25 +54,21 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto approveBooking(Long bookingId, Long ownerId, boolean approved) {
-        // Проверяем существование пользователя
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
-        // Получаем бронирование
+
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
-        // Проверяем что пользователь - владелец вещи
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
             throw new SecurityException("Only item owner can approve booking");
         }
 
-        // Проверяем статус
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Booking is already processed");
         }
 
-        // Устанавливаем новый статус
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         Booking updatedBooking = bookingRepository.save(booking);
 
@@ -81,15 +77,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponseDto getBookingById(Long bookingId, Long userId) {
-        // Проверяем существование пользователя
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
 
-        // Получаем бронирование
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
-        // Проверяем права доступа
         if (!booking.getBooker().getId().equals(userId) &&
                 !booking.getItem().getOwner().getId().equals(userId)) {
             throw new SecurityException("User does not have access to this booking");
@@ -100,7 +93,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getBookingsByBooker(Long bookerId, String state, Pageable pageable) {
-        // Проверяем существование пользователя
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
@@ -137,7 +129,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getBookingsByOwner(Long ownerId, String state, Pageable pageable) {
-        // Проверяем существование пользователя
+
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
@@ -173,17 +165,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void validateBookingCreation(BookingDto bookingDto, Long bookerId, Item item) {
-        // Проверка доступности вещи
         if (!item.getAvailable()) {
             throw new ValidationException("Item is not available for booking");
         }
 
-        // Проверка что пользователь не владелец вещи
         if (item.getOwner().getId().equals(bookerId)) {
             throw new NoSuchElementException("Owner cannot book own item");
         }
 
-        // Проверка дат
         if (bookingDto.getEnd().isBefore(bookingDto.getStart()) ||
                 bookingDto.getEnd().isEqual(bookingDto.getStart())) {
             throw new ValidationException("End date must be after start date");
