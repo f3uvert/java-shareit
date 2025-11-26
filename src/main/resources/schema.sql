@@ -50,14 +50,3 @@ CREATE TABLE IF NOT EXISTS comments (
   CONSTRAINT fk_comment_item FOREIGN KEY (item_id) REFERENCES items(id),
   CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id)
 );
-
-INSERT INTO users (id, name, email) VALUES
-(1, 'Item Owner', 'owner@example.com'),
-(2, 'Booker User', 'booker@example.com'),
-(3, 'Wrong User', 'wrong@example.com');
-
-INSERT INTO items (id, name, description, is_available, owner_id) VALUES
-(1, 'Test Item', 'Test Description', true, 1);
-
-INSERT INTO bookings (id, start_date, end_date, item_id, booker_id, status) VALUES
-(1, '2025-11-26T10:00:00', '2025-11-27T10:00:00', 1, 2, 'WAITING');
