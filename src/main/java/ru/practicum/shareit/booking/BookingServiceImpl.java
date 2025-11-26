@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
@@ -28,6 +30,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
+        log.info("Creating booking for user: {}, item: {}", bookerId, bookingDto.getItemId());
+
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
@@ -44,32 +48,24 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.WAITING);
 
         Booking savedBooking = bookingRepository.save(booking);
+        log.info("Booking created successfully: id={}", savedBooking.getId());
+
         return toBookingResponseDto(savedBooking);
     }
 
     @Override
     @Transactional
     public BookingResponseDto approveBooking(Long bookingId, Long ownerId, boolean approved) {
-        System.out.println("=== APPROVE BOOKING START ===");
-        System.out.println("bookingId: " + bookingId + ", ownerId: " + ownerId + ", approved: " + approved);
+        log.info("Approving booking: bookingId={}, ownerId={}, approved={}", bookingId, ownerId, approved);
 
         User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> {
-                    System.out.println("USER NOT FOUND: " + ownerId);
-                    return new NoSuchElementException("User not found with id: " + ownerId);
-                });
-        System.out.println("User found: " + owner.getId());
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> {
-                    System.out.println("BOOKING NOT FOUND: " + bookingId);
-                    return new NoSuchElementException("Booking not found with id: " + bookingId);
-                });
-
-        System.out.println("Booking found: itemOwnerId=" + booking.getItem().getOwner().getId() + ", requestingOwnerId=" + ownerId);
+                .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
-            System.out.println("ACCESS DENIED: user " + ownerId + " is not owner of item " + booking.getItem().getId());
+            log.warn("Access denied: user {} is not owner of item {}", ownerId, booking.getItem().getId());
             throw new SecurityException("Only item owner can approve booking");
         }
 
@@ -80,12 +76,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         Booking updatedBooking = bookingRepository.save(booking);
 
-        System.out.println("=== APPROVE BOOKING SUCCESS ===");
+        log.info("Booking approved successfully: id={}, newStatus={}", updatedBooking.getId(), updatedBooking.getStatus());
         return toBookingResponseDto(updatedBooking);
     }
 
     @Override
     public BookingResponseDto getBookingById(Long bookingId, Long userId) {
+        log.info("Getting booking: bookingId={}, userId={}", bookingId, userId);
+
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
 
@@ -102,6 +100,8 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getBookingsByBooker(Long bookerId, String state, Pageable pageable) {
+        log.info("Getting bookings for booker: bookerId={}, state={}", bookerId, state);
+
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
@@ -138,6 +138,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingResponseDto> getBookingsByOwner(Long ownerId, String state, Pageable pageable) {
+        log.info("Getting bookings for owner: ownerId={}, state={}", ownerId, state);
 
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
