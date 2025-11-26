@@ -1,9 +1,11 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
@@ -14,11 +16,12 @@ import java.util.List;
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingResponseDto createBooking(@RequestBody BookingDto bookingDto,
+    public BookingResponseDto createBooking(@Valid @RequestBody BookingDto bookingDto, // ← @Valid добавлен
                                             @RequestHeader("X-Sharer-User-Id") Long bookerId) {
         log.info("POST /bookings | User-ID: {} | Item: {} | Period: {} -> {}",
                 bookerId, bookingDto.getItemId(), bookingDto.getStart(), bookingDto.getEnd());

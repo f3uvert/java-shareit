@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.*;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @RequestMapping("/items")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class ItemController {
     private final ItemService itemService;
 
@@ -41,12 +43,20 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@PathVariable Long itemId,
-                              @RequestBody ItemDto itemDto,
+                              @Valid @RequestBody ItemUpdateDto itemDto, // ← Используем Update DTO
                               @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("PATCH /items/{} | User-ID: {} | Updates: {}",
                 itemId, ownerId, getUpdatedFields(itemDto));
 
-        ItemDto result = itemService.updateItem(itemId, itemDto, ownerId);
+        ItemDto serviceDto = new ItemDto(
+                itemId,
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable(),
+                itemDto.getRequestId()
+        );
+
+        ItemDto result = itemService.updateItem(itemId, serviceDto, ownerId);
         log.info("PATCH /items/{} | Update successful", itemId);
 
         return result;
@@ -80,7 +90,7 @@ public class ItemController {
         return result;
     }
 
-    private String getUpdatedFields(ItemDto itemDto) {
+    private String getUpdatedFields(ItemUpdateDto itemDto) {
         List<String> fields = new ArrayList<>();
         if (itemDto.getName() != null) fields.add("name");
         if (itemDto.getDescription() != null) fields.add("description");

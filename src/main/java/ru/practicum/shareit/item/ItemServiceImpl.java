@@ -60,6 +60,30 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
+    public ItemDto updateItem(Long itemId, ItemUpdateDto itemDto, Long ownerId) {
+        Item existingItem = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + itemId));
+
+        if (!existingItem.getOwner().getId().equals(ownerId)) {
+            throw new SecurityException("User is not the owner of this item");
+        }
+
+        if (itemDto.getName() != null) {
+            existingItem.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            existingItem.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            existingItem.setAvailable(itemDto.getAvailable());
+        }
+
+        Item updatedItem = itemRepository.save(existingItem);
+        return ItemMapper.toItemDto(updatedItem);
+    }
+
+    @Override
+    @Transactional
     public ItemDto updateItem(Long itemId, ItemDto itemDto, Long ownerId) {
         Item existingItem = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + itemId));

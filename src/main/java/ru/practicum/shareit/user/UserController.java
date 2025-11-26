@@ -3,25 +3,36 @@ package ru.practicum.shareit.user;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserUpdateDto;
+
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
 @Slf4j
+@Validated
 public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public UserDto createUser(@Valid @RequestBody UserDto userDto) {  // ← Добавил @Valid
+    public UserDto createUser(@Valid @RequestBody UserDto userDto) {
         return userService.createUser(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@PathVariable Long userId, @RequestBody UserDto userDto) {
-        return userService.updateUser(userId, userDto);
+    public UserDto updateUser(@PathVariable Long userId,
+                              @Valid @RequestBody UserUpdateDto userDto) {
+        // Конвертируем UserUpdateDto в UserDto для сервиса
+        UserDto serviceDto = new UserDto(
+                userId,
+                userDto.getName(),
+                userDto.getEmail()
+        );
+        return userService.updateUser(userId, serviceDto);
     }
 
     @GetMapping("/{userId}")
