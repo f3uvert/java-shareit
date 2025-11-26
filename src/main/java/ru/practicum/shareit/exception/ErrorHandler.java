@@ -51,6 +51,7 @@ public class ErrorHandler {
         log.error("Internal server error: ", e);
         return new ErrorResponse("Internal server error");
     }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {

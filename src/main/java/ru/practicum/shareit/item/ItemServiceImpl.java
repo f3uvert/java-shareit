@@ -91,7 +91,6 @@ public class ItemServiceImpl implements ItemService {
 
         if (item.getOwner().getId().equals(userId)) {
             ItemForOwnerDto itemForOwner = createItemForOwner(item, comments);
-            // Конвертируем ItemForOwnerDto в ItemWithBookingsDto
             return convertToItemWithBookingsDto(itemForOwner);
         } else {
             return createItemForUser(item, comments);
