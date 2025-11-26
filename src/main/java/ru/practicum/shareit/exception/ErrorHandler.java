@@ -27,10 +27,17 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, ValidationException.class})
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)  // Или BAD_REQUEST в зависимости от логики
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
+        log.error("Conflict: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBadRequest(Exception e) {
-        log.error("Bad request: {}", e.getMessage());
+    public ErrorResponse handleValidation(ValidationException e) {
+        log.error("Validation error: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
@@ -50,12 +57,5 @@ public class ErrorHandler {
     public ErrorResponse handleInternalError(Exception e) {
         log.error("Internal server error: ", e);
         return new ErrorResponse("Internal server error");
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
-        log.error("Conflict: {}", e.getMessage());
-        return new ErrorResponse(e.getMessage());
     }
 }
