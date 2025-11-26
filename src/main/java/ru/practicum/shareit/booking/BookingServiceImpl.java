@@ -58,9 +58,6 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDto approveBooking(Long bookingId, Long ownerId, boolean approved) {
         log.info("Approving booking: bookingId={}, ownerId={}, approved={}", bookingId, ownerId, approved);
 
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
-
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
@@ -68,6 +65,9 @@ public class BookingServiceImpl implements BookingService {
             log.warn("Access denied: user {} is not owner of item {}", ownerId, booking.getItem().getId());
             throw new SecurityException("Only item owner can approve booking");
         }
+
+        userRepository.findById(ownerId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Booking is already processed");
