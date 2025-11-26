@@ -27,7 +27,6 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // Проверяем, нет ли уже данных
         if (userRepository.count() > 0) {
             log.info("Data already exists, skipping initialization");
             return;
@@ -39,9 +38,15 @@ public class DataInitializer implements CommandLineRunner {
         User booker = createUser("Booker User", "booker@example.com");
         User wrongUser = createUser("Wrong User", "wrong@example.com");
 
-        Item item = createItem("Test Item", "Test Description", true, owner);
+        log.info("Created users: ownerId={}, bookerId={}, wrongUserId={}",
+                owner.getId(), booker.getId(), wrongUser.getId());
 
-        createBooking(item, booker, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+        Item item = createItem("Test Item", "Test Description", true, owner);
+        log.info("Created item: id={}, ownerId={}", item.getId(), item.getOwner().getId());
+
+        Booking booking = createBooking(item, booker, LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2));
+        log.info("Created booking: id={}, itemId={}, bookerId={}",
+                booking.getId(), booking.getItem().getId(), booking.getBooker().getId());
 
         log.info("Test data initialized successfully");
     }
@@ -62,13 +67,13 @@ public class DataInitializer implements CommandLineRunner {
         return itemRepository.save(item);
     }
 
-    private void createBooking(Item item, User booker, LocalDateTime start, LocalDateTime end) {
+    private Booking createBooking(Item item, User booker, LocalDateTime start, LocalDateTime end) {
         Booking booking = new Booking();
         booking.setStart(start);
         booking.setEnd(end);
         booking.setItem(item);
         booking.setBooker(booker);
         booking.setStatus(BookingStatus.WAITING);
-        bookingRepository.save(booking);
+        return bookingRepository.save(booking);
     }
 }

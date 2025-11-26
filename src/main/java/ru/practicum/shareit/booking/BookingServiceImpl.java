@@ -46,18 +46,29 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         return toBookingResponseDto(savedBooking);
     }
-
     @Override
     @Transactional
     public BookingResponseDto approveBooking(Long bookingId, Long ownerId, boolean approved) {
-        userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
+        System.out.println("=== APPROVE BOOKING START ===");
+        System.out.println("bookingId: " + bookingId + ", ownerId: " + ownerId + ", approved: " + approved);
 
+        User owner = userRepository.findById(ownerId)
+                .orElseThrow(() -> {
+                    System.out.println("USER NOT FOUND: " + ownerId);
+                    return new NoSuchElementException("User not found with id: " + ownerId);
+                });
+        System.out.println("User found: " + owner.getId());
 
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
+                .orElseThrow(() -> {
+                    System.out.println("BOOKING NOT FOUND: " + bookingId);
+                    return new NoSuchElementException("Booking not found with id: " + bookingId);
+                });
+
+        System.out.println("Booking found: itemOwnerId=" + booking.getItem().getOwner().getId() + ", requestingOwnerId=" + ownerId);
 
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
+            System.out.println("ACCESS DENIED: user " + ownerId + " is not owner of item " + booking.getItem().getId());
             throw new SecurityException("Only item owner can approve booking");
         }
 
@@ -68,6 +79,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
         Booking updatedBooking = bookingRepository.save(booking);
 
+        System.out.println("=== APPROVE BOOKING SUCCESS ===");
         return toBookingResponseDto(updatedBooking);
     }
 
