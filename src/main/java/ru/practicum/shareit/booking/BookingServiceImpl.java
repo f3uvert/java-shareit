@@ -50,7 +50,7 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         log.info("Booking created successfully: id={}", savedBooking.getId());
 
-        return toBookingResponseDto(savedBooking);
+        return BookingMapper.toBookingResponseDto(savedBooking);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class BookingServiceImpl implements BookingService {
         Booking updatedBooking = bookingRepository.save(booking);
 
         log.info("Booking approved successfully: id={}, newStatus={}", updatedBooking.getId(), updatedBooking.getStatus());
-        return toBookingResponseDto(updatedBooking);
+        return BookingMapper.toBookingResponseDto(updatedBooking);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NoSuchElementException("User does not have access to this booking");
         }
 
-        return toBookingResponseDto(booking);
+        return BookingMapper.toBookingResponseDto(booking);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookings.stream()
-                .map(this::toBookingResponseDto)
+                .map(BookingMapper::toBookingResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -170,7 +170,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookings.stream()
-                .map(this::toBookingResponseDto)
+                .map(BookingMapper::toBookingResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -194,24 +194,4 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private BookingResponseDto toBookingResponseDto(Booking booking) {
-        BookingResponseDto.BookingItemDto itemDto = new BookingResponseDto.BookingItemDto(
-                booking.getItem().getId(),
-                booking.getItem().getName()
-        );
-
-        BookingResponseDto.BookingUserDto userDto = new BookingResponseDto.BookingUserDto(
-                booking.getBooker().getId(),
-                booking.getBooker().getName()
-        );
-
-        return new BookingResponseDto(
-                booking.getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                itemDto,
-                userDto,
-                booking.getStatus()
-        );
-    }
 }

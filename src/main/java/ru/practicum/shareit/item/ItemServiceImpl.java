@@ -34,27 +34,25 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
         log.info("Creating item: name={}, ownerId={}", itemDto.getName(), ownerId);
 
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
+        try {
+            if (itemDto.getAvailable() == null) {
+                throw new IllegalArgumentException("Available cannot be null");
+            }
 
-        if (itemDto.getName() == null || itemDto.getName().isBlank()) {
-            throw new IllegalArgumentException("Item name cannot be empty");
-        }
-        if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
-            throw new IllegalArgumentException("Item description cannot be empty");
-        }
-        if (itemDto.getAvailable() == null) {
-            throw new IllegalArgumentException("Available cannot be null");
-        }
+            User owner = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
-        Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setOwner(owner);
+            Item item = ItemMapper.toItem(itemDto);
+            item.setOwner(owner);
 
-        Item savedItem = itemRepository.save(item);
-        return ItemMapper.toItemDto(savedItem);
+            Item savedItem = itemRepository.save(item);
+            log.info("Item created successfully: id={}", savedItem.getId());
+
+            return ItemMapper.toItemDto(savedItem);
+        } catch (Exception e) {
+            log.error("Error creating item: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override

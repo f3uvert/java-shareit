@@ -11,7 +11,7 @@ public class BookingDateValidator implements ConstraintValidator<ValidBookingDat
     @Override
     public boolean isValid(BookingDto bookingDto, ConstraintValidatorContext context) {
         if (bookingDto.getStart() == null || bookingDto.getEnd() == null) {
-            return true; //
+            return true;
         }
 
         boolean isValid = true;
