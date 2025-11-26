@@ -66,7 +66,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
             log.warn("Access denied: user {} is not owner of item {}", ownerId, booking.getItem().getId());
-            throw new SecurityException("Only item owner can approve booking");
+            throw new NoSuchElementException("Only item owner can approve booking");
         }
 
         if (booking.getStatus() != BookingStatus.WAITING) {
@@ -92,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
 
         if (!booking.getBooker().getId().equals(userId) &&
                 !booking.getItem().getOwner().getId().equals(userId)) {
-            throw new SecurityException("User does not have access to this booking");
+            throw new NoSuchElementException("User does not have access to this booking");
         }
 
         return toBookingResponseDto(booking);

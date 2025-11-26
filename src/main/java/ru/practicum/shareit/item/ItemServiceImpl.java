@@ -88,7 +88,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + itemId));
 
         if (!existingItem.getOwner().getId().equals(ownerId)) {
-            throw new SecurityException("User is not the owner of this item");
+            throw new NoSuchElementException("User is not the owner of this item");
         }
 
         if (itemDto.getName() != null && !itemDto.getName().isBlank()) {

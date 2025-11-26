@@ -25,9 +25,9 @@ public class UserServiceImpl implements UserService {
                 throw new IllegalArgumentException("Email cannot be empty");
             }
 
-            String email = userDto.getEmail().toLowerCase().trim();
+            String email = userDto.getEmail().trim();
 
-            if (userRepository.findByEmail(email).isPresent()) {
+            if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
                 throw new IllegalArgumentException("Email already exists: " + email);
             }
 
@@ -50,13 +50,19 @@ public class UserServiceImpl implements UserService {
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
 
-        if (userDto.getEmail() != null && !userDto.getEmail().isBlank() &&
-                !userDto.getEmail().equals(existingUser.getEmail())) {
-            String newEmail = userDto.getEmail().toLowerCase().trim();
-            if (userRepository.findByEmail(newEmail).isPresent()) {
-                throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+        // Сохраняем оригинальный регистр email
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+            String newEmail = userDto.getEmail().trim(); // Убрал .toLowerCase()
+
+            // Проверяем конфликт только если email действительно изменился
+            if (!newEmail.equalsIgnoreCase(existingUser.getEmail())) {
+                // Проверяем конфликт без учета регистра
+                userRepository.findByEmailIgnoreCase(newEmail)
+                        .ifPresent(user -> {
+                            throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+                        });
+                existingUser.setEmail(newEmail);
             }
-            existingUser.setEmail(newEmail);
         }
 
         if (userDto.getName() != null && !userDto.getName().isBlank()) {
