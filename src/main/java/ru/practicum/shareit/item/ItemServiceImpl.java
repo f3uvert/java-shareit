@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -13,12 +14,15 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
@@ -28,18 +32,30 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
-        if (itemDto.getAvailable() == null) {
-            throw new IllegalArgumentException("Available cannot be null");
+        log.info("Creating item: name={}, ownerId={}", itemDto.getName(), ownerId);
+
+        try {
+            if (itemDto.getAvailable() == null) {
+                throw new IllegalArgumentException("Available cannot be null");
+            }
+
+            User owner = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
+
+            Item item = new Item();
+            item.setName(itemDto.getName());
+            item.setDescription(itemDto.getDescription());
+            item.setAvailable(itemDto.getAvailable());
+            item.setOwner(owner);
+
+            Item savedItem = itemRepository.save(item);
+            log.info("Item created successfully: id={}", savedItem.getId());
+
+            return ItemMapper.toItemDto(savedItem);
+        } catch (Exception e) {
+            log.error("Error creating item: {}", e.getMessage(), e);
+            throw e;
         }
-
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
-
-        Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(owner);
-        Item savedItem = itemRepository.save(item);
-
-        return ItemMapper.toItemDto(savedItem);
     }
 
     @Override

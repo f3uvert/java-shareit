@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.user.UserMapper.toUserDto;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -16,17 +18,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        log.info("Creating user with email: {}", userDto.getEmail());
+        log.info("Creating user: name={}, email={}", userDto.getName(), userDto.getEmail());
 
-        if (userRepository.findByEmail(userDto.getEmail().toLowerCase().trim()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+        try {
+            if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
+                throw new IllegalArgumentException("Email cannot be empty");
+            }
+
+            String email = userDto.getEmail().toLowerCase().trim();
+
+            if (userRepository.findByEmail(email).isPresent()) {
+                throw new IllegalArgumentException("Email already exists: " + email);
+            }
+
+            User user = new User();
+            user.setName(userDto.getName());
+            user.setEmail(email);
+
+            User savedUser = userRepository.save(user);
+            log.info("User created successfully: id={}", savedUser.getId());
+
+            return toUserDto(savedUser);
+        } catch (Exception e) {
+            log.error("Error creating user: {}", e.getMessage(), e);
+            throw e;
         }
-
-        User user = UserMapper.toUser(userDto);
-        User savedUser = userRepository.save(user);
-        log.info("User created successfully with id: {}", savedUser.getId());
-
-        return UserMapper.toUserDto(savedUser);
     }
 
     @Override
@@ -47,14 +63,14 @@ public class UserServiceImpl implements UserService {
         }
 
         User updatedUser = userRepository.save(existingUser);
-        return UserMapper.toUserDto(updatedUser);
+        return toUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
-        return UserMapper.toUserDto(user);
+        return toUserDto(user);
     }
 
     @Override

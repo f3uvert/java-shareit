@@ -50,38 +50,3 @@ CREATE TABLE IF NOT EXISTS comments (
   CONSTRAINT fk_comment_item FOREIGN KEY (item_id) REFERENCES items(id),
   CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id)
 );
-
-INSERT INTO users (id, name, email) VALUES
-(1, 'Owner User', 'owner@example.com'),
-(2, 'Booker User', 'booker@example.com'),
-(3, 'Wrong User', 'wrong@example.com'),
-(4, 'Search User', 'search@example.com'),
-(5, 'Another User', 'another@example.com'),
-(6, 'Update User', 'update@example.com'),
-(46, 'Wrong User 46', 'wrong46@example.com'),
-(47, 'Test User 47', 'test47@example.com'),
-(48, 'Test User 48', 'test48@example.com');
-
-
-INSERT INTO items (id, name, description, is_available, owner_id) VALUES
-(1, 'Test Item 1', 'Test Description 1', true, 1),
-(2, 'Test Item 2', 'Test Description 2', true, 1),
-(3, 'Unavailable Item', 'Not available item', false, 1),
-(4, 'Searchable Item', 'This item can be found by search', true, 4),
-(5, 'Another Search Item', 'Another item for search', true, 4),
-(6, 'Item for Update', 'Item for update tests', true, 6),
-(7, 'Booking Item', 'Item for booking tests', true, 1);
-
-INSERT INTO bookings (id, start_date, end_date, item_id, booker_id, status) VALUES
-(1, '2025-11-26T10:00:00', '2025-11-27T10:00:00', 1, 2, 'WAITING'),
-(2, '2025-11-28T10:00:00', '2025-11-29T10:00:00', 1, 3, 'APPROVED'),
-(3, '2025-11-20T10:00:00', '2025-11-21T10:00:00', 1, 2, 'REJECTED'),
-(4, '2025-11-26T23:31:40', '2025-11-27T23:31:40', 7, 2, 'WAITING'); -- для теста approve
-
-INSERT INTO requests (id, description, requestor_id, created) VALUES
-(1, 'Need a drill for home repair', 2, '2025-11-25T10:00:00'),
-(2, 'Looking for a camera for weekend', 3, '2025-11-25T11:00:00');
-
-INSERT INTO comments (id, text, item_id, author_id, created) VALUES
-(1, 'Great item, thanks!', 1, 2, '2025-11-25T12:00:00'),
-(2, 'Very useful, will book again', 1, 3, '2025-11-25T13:00:00');
