@@ -1,11 +1,14 @@
 package ru.practicum.shareit.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.NoSuchElementException;
 
@@ -29,8 +32,15 @@ public class ErrorHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflict(IllegalArgumentException e) {
+    public ErrorResponse handleIllegalArgument(IllegalArgumentException e) {
         log.error("Conflict: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidation(ValidationException e) {
+        log.error("Validation error: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
@@ -44,4 +54,38 @@ public class ErrorHandler {
         log.error("Validation error: {}", errorMessage);
         return new ErrorResponse(errorMessage);
     }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConstraintViolation(ConstraintViolationException ex) {
+        String errorMessage = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
+                .findFirst()
+                .orElse("Constraint violation");
+        log.error("Constraint violation: {}", errorMessage);
+        return new ErrorResponse(errorMessage);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingHeader(MissingRequestHeaderException ex) {
+        log.error("Missing header: {}", ex.getMessage());
+        return new ErrorResponse("Required header 'X-Sharer-User-Id' is missing");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        log.error("Type mismatch: {}", ex.getMessage());
+        return new ErrorResponse("Invalid parameter type: " + ex.getName());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleInternalError(Exception e) {
+        log.error("Internal server error: ", e);
+        return new ErrorResponse("Internal server error");
+    }
+
+
 }
