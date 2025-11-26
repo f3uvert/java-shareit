@@ -46,6 +46,7 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         return toBookingResponseDto(savedBooking);
     }
+
     @Override
     @Transactional
     public BookingResponseDto approveBooking(Long bookingId, Long ownerId, boolean approved) {
