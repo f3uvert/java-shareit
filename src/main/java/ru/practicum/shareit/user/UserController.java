@@ -25,14 +25,8 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto updateUser(@PathVariable Long userId,
-                              @Valid @RequestBody UserUpdateDto userDto) {
-        // Конвертируем UserUpdateDto в UserDto для сервиса
-        UserDto serviceDto = new UserDto(
-                userId,
-                userDto.getName(),
-                userDto.getEmail()
-        );
-        return userService.updateUser(userId, serviceDto);
+                              @RequestBody UserDto userDto) {
+        return userService.updateUser(userId, userDto);
     }
 
     @GetMapping("/{userId}")

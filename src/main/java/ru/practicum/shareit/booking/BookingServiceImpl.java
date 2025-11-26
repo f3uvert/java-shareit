@@ -188,10 +188,6 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("End date must be after start date");
         }
 
-        if (bookingDto.getStart().isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Start date cannot be in the past");
-        }
-
         if (bookingRepository.existsApprovedBookingForItemInPeriod(
                 item.getId(), bookingDto.getStart(), bookingDto.getEnd())) {
             throw new ValidationException("Item is already booked for this period");
