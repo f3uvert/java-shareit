@@ -27,7 +27,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <lombok.version>1.18.30</lombok.version>
         <checkstyle.version>3.3.0</checkstyle.version>
-        <!-- Отключаем deploy по умолчанию -->
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
@@ -48,7 +47,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <!-- Maven Compiler Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -66,7 +64,6 @@
                     </configuration>
                 </plugin>
 
-                <!-- Spring Boot Maven Plugin -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -80,7 +77,6 @@
                     </configuration>
                 </plugin>
 
-                <!-- Maven Deploy Plugin - ОТКЛЮЧЕН -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
@@ -102,7 +98,6 @@
                     </executions>
                 </plugin>
 
-                <!-- Maven Enforcer Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -127,7 +122,6 @@
                     </executions>
                 </plugin>
 
-                <!-- Checkstyle Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -151,9 +145,9 @@
             </plugins>
         </pluginManagement>
 
-        <!-- Плагины для родительского модуля -->
+
         <plugins>
-            <!-- Отключаем deploy для родительского pom -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -165,7 +159,6 @@
     </build>
 
     <profiles>
-        <!-- Профиль для проверок в CI/CD -->
         <profile>
             <id>check</id>
             <activation>
@@ -200,8 +193,6 @@
                 </plugins>
             </build>
         </profile>
-
-        <!-- Профиль для локальной разработки -->
         <profile>
             <id>dev</id>
             <activation>
@@ -213,8 +204,6 @@
                 <maven.deploy.skip>true</maven.deploy.skip>
             </properties>
         </profile>
-
-        <!-- Профиль для реального deploy (если понадобится) -->
         <profile>
             <id>production</id>
             <properties>
