@@ -27,6 +27,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <lombok.version>1.18.30</lombok.version>
         <checkstyle.version>3.3.0</checkstyle.version>
+        <!-- Отключаем deploy по умолчанию -->
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <modules>
@@ -46,6 +48,7 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!-- Maven Compiler Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -63,6 +66,7 @@
                     </configuration>
                 </plugin>
 
+                <!-- Spring Boot Maven Plugin -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -76,6 +80,29 @@
                     </configuration>
                 </plugin>
 
+                <!-- Maven Deploy Plugin - ОТКЛЮЧЕН -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <skip>${maven.deploy.skip}</skip>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <phase>deploy</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                            <configuration>
+                                <skip>${maven.deploy.skip}</skip>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Maven Enforcer Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
@@ -100,6 +127,7 @@
                     </executions>
                 </plugin>
 
+                <!-- Checkstyle Plugin -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
@@ -122,9 +150,22 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <!-- Плагины для родительского модуля -->
+        <plugins>
+            <!-- Отключаем deploy для родительского pom -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
+        <!-- Профиль для проверок в CI/CD -->
         <profile>
             <id>check</id>
             <activation>
@@ -132,6 +173,10 @@
                     <name>env.CI</name>
                 </property>
             </activation>
+            <properties>
+                <maven.deploy.skip>true</maven.deploy.skip>
+                <checkstyle.skip>false</checkstyle.skip>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -155,6 +200,8 @@
                 </plugins>
             </build>
         </profile>
+
+        <!-- Профиль для локальной разработки -->
         <profile>
             <id>dev</id>
             <activation>
@@ -163,7 +210,26 @@
             <properties>
                 <skipTests>false</skipTests>
                 <checkstyle.skip>true</checkstyle.skip>
+                <maven.deploy.skip>true</maven.deploy.skip>
             </properties>
+        </profile>
+
+        <!-- Профиль для реального deploy (если понадобится) -->
+        <profile>
+            <id>production</id>
+            <properties>
+                <maven.deploy.skip>false</maven.deploy.skip>
+            </properties>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>snapshots</id>
+                    <url>http://your-repository-url/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>releases</id>
+                    <url>http://your-repository-url/releases</url>
+                </repository>
+            </distributionManagement>
         </profile>
     </profiles>
 </project>
