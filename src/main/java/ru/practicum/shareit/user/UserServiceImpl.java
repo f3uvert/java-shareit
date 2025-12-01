@@ -4,91 +4,94 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
+import static ru.practicum.shareit.user.UserMapper.toUserDto;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
-    private final Map<Long, User> users = new HashMap<>();
-    private final Map<String, Long> emailToUserId = new HashMap<>();
-    private final AtomicLong idCounter = new AtomicLong(1);
+    private final UserRepository userRepository;
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        log.info("Creating user with email: {}", userDto.getEmail());
+        log.info("Creating user: name={}, email={}", userDto.getName(), userDto.getEmail());
 
-        String emailLower = userDto.getEmail().toLowerCase().trim();
-        log.info("Checking email uniqueness: {}", emailLower);
-        log.info("Existing emails: {}", emailToUserId.keySet());
+        try {
+            if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
+                throw new IllegalArgumentException("Email cannot be empty");
+            }
 
-        if (emailToUserId.containsKey(emailLower)) {
-            log.warn("Email already exists: {}", emailLower);
-            throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+            String email = userDto.getEmail().trim();
+
+            if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
+                throw new IllegalArgumentException("Email already exists: " + email);
+            }
+
+            User user = new User();
+            user.setName(userDto.getName());
+            user.setEmail(email);
+
+            User savedUser = userRepository.save(user);
+            log.info("User created successfully: id={}", savedUser.getId());
+
+            return toUserDto(savedUser);
+        } catch (Exception e) {
+            log.error("Error creating user: {}", e.getMessage(), e);
+            throw e;
         }
-
-        User user = UserMapper.toUser(userDto);
-        user.setId(idCounter.getAndIncrement());
-        users.put(user.getId(), user);
-        emailToUserId.put(emailLower, user.getId());
-
-        log.info("User created successfully with id: {}", user.getId());
-        return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto updateUser(Long userId, UserDto userDto) {
-        User existingUser = users.get(userId);
-        if (existingUser == null) {
-            throw new NoSuchElementException("User not found with id: " + userId);
-        }
+        User existingUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
 
-        if (userDto.getEmail() != null && !userDto.getEmail().equals(existingUser.getEmail())) {
-            String newEmail = userDto.getEmail().toLowerCase().trim();
-            if (emailToUserId.containsKey(newEmail)) {
-                throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+        // Сохраняем оригинальный регистр email
+        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
+            String newEmail = userDto.getEmail().trim(); // Убрал .toLowerCase()
+
+            // Проверяем конфликт только если email действительно изменился
+            if (!newEmail.equalsIgnoreCase(existingUser.getEmail())) {
+                // Проверяем конфликт без учета регистра
+                userRepository.findByEmailIgnoreCase(newEmail)
+                        .ifPresent(user -> {
+                            throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+                        });
+                existingUser.setEmail(newEmail);
             }
-
-            emailToUserId.remove(existingUser.getEmail().toLowerCase().trim());
-            emailToUserId.put(newEmail, userId);
-            existingUser.setEmail(userDto.getEmail());
         }
 
-        if (userDto.getName() != null) {
+        if (userDto.getName() != null && !userDto.getName().isBlank()) {
             existingUser.setName(userDto.getName());
         }
 
-        users.put(userId, existingUser);
-        return UserMapper.toUserDto(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+        return toUserDto(updatedUser);
     }
 
     @Override
     public UserDto getUserById(Long userId) {
-        User user = users.get(userId);
-        if (user == null) {
-            throw new NoSuchElementException("User not found with id: " + userId);
-        }
-        return UserMapper.toUserDto(user);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+        return toUserDto(user);
     }
 
     @Override
     public List<UserDto> getAllUsers() {
-        return users.values().stream()
+        return userRepository.findAll().stream()
                 .map(UserMapper::toUserDto)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Override
     public void deleteUser(Long userId) {
-        User user = users.get(userId);
-        if (user == null) {
+        if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User not found with id: " + userId);
         }
-
-        emailToUserId.remove(user.getEmail().toLowerCase().trim());
-        users.remove(userId);
+        userRepository.deleteById(userId);
     }
 }
