@@ -293,7 +293,7 @@ public class DtoConverter {
             String status = serverResponse.get("status").toString();
             try {
                 dto.setStatus(BookingStatus.valueOf(status));
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException ignored) {
 
             }
         }
