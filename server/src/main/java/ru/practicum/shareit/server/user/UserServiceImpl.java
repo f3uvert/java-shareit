@@ -120,9 +120,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("User not found with id: " + userId);
+        log.info("Deleting user with id: {}", userId);
+
+        try {
+            if (!userRepository.existsById(userId)) {
+                log.warn("User not found with id: {}", userId);
+                throw new NoSuchElementException("User not found with id: " + userId);
+            }
+
+            userRepository.deleteById(userId);
+            log.info("User {} deleted successfully", userId);
+
+        } catch (NoSuchElementException e) {
+            log.error("Error deleting user {}: {}", userId, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error deleting user {}: {}", userId, e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error deleting user: " + e.getMessage());
         }
-        userRepository.deleteById(userId);
     }
 }
