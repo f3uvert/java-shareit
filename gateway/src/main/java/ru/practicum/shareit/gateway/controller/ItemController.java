@@ -23,7 +23,7 @@ public class ItemController {
     public ItemDto createItem(@Valid @RequestBody ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: POST /items | User-ID: {}", ownerId);
-        return itemClient.createItem(itemDto, ownerId);
+        return (ItemDto) itemClient.createItem(itemDto, ownerId);
     }
 
     @PostMapping("/{itemId}/comment")
@@ -31,7 +31,7 @@ public class ItemController {
                                          @Valid @RequestBody CommentDto commentDto,
                                          @RequestHeader("X-Sharer-User-Id") Long authorId) {
         log.info("Gateway: POST /items/{}/comment", itemId);
-        return itemClient.addComment(itemId, commentDto, authorId);
+        return (CommentResponseDto) itemClient.addComment(itemId, commentDto, authorId);
     }
 
     @PatchMapping("/{itemId}")
@@ -39,14 +39,14 @@ public class ItemController {
                               @Valid @RequestBody ItemUpdateDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: PATCH /items/{}", itemId);
-        return itemClient.updateItem(itemId, itemDto, ownerId);
+        return (ItemDto) itemClient.updateItem(itemId, itemDto, ownerId);
     }
 
     @GetMapping("/{itemId}")
     public ItemWithBookingsDto getItemById(@PathVariable Long itemId,
                                            @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Gateway: GET /items/{}", itemId);
-        return itemClient.getItemById(itemId, userId);
+        return (ItemWithBookingsDto) itemClient.getItemById(itemId, userId);
     }
 
     @GetMapping
@@ -54,7 +54,7 @@ public class ItemController {
                                                      @RequestParam(defaultValue = "0") int from,
                                                      @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /items | Owner-ID: {}", ownerId);
-        return itemClient.getItemsByOwner(ownerId, from, size);
+        return (List<ItemWithBookingsDto>) itemClient.getItemsByOwner(ownerId, from, size);
     }
 
     @GetMapping("/search")
@@ -62,7 +62,7 @@ public class ItemController {
                                      @RequestParam(defaultValue = "0") int from,
                                      @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /items/search | Text: '{}'", text);
-        return itemClient.searchItems(text, from, size);
+        return (List<ItemDto>) itemClient.searchItems(text, from, size);
     }
 
     private String getUpdatedFields(ItemUpdateDto itemDto) {

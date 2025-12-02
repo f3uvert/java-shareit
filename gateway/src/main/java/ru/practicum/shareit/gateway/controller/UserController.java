@@ -25,7 +25,7 @@ public class UserController {
         log.info("Gateway: POST /users | Creating user: name='{}', email='{}'",
                 userDto.getName(), userDto.getEmail());
 
-        UserDto createdUser = userClient.createUser(userDto);
+        UserDto createdUser = (UserDto) userClient.createUser(userDto);
         log.info("Gateway: User created successfully | ID: {}, Email: {}",
                 createdUser.getId(), createdUser.getEmail());
 
@@ -39,7 +39,7 @@ public class UserController {
         log.debug("Gateway: Update data - name: {}, email: {}",
                 userDto.getName(), userDto.getEmail());
 
-        UserDto updatedUser = userClient.updateUser(userId, userDto);
+        UserDto updatedUser = (UserDto) userClient.updateUser(userId, userDto);
         log.info("Gateway: User {} updated successfully", userId);
 
         return updatedUser;
@@ -49,7 +49,7 @@ public class UserController {
     public UserDto getUserById(@PathVariable Long userId) {
         log.info("Gateway: GET /users/{} | Getting user by ID", userId);
 
-        UserDto user = userClient.getUserById(userId);
+        UserDto user = (UserDto) userClient.getUserById(userId);
         log.info("Gateway: User {} retrieved successfully | Name: {}",
                 userId, user.getName());
 
@@ -60,7 +60,7 @@ public class UserController {
     public List<UserDto> getAllUsers() {
         log.info("Gateway: GET /users | Getting all users");
 
-        List<UserDto> users = userClient.getAllUsers();
+        List<UserDto> users = (List<UserDto>) userClient.getAllUsers();
         log.info("Gateway: Retrieved {} users", users.size());
 
         return users;

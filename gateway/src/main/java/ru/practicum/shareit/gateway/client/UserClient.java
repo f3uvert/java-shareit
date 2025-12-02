@@ -1,99 +1,48 @@
 package ru.practicum.shareit.gateway.client;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 import ru.practicum.shareit.gateway.dto.UserDto;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
-public class UserClient {
-    private final WebClient webClient;
+public class UserClient extends BaseClient {
 
-    public UserDto createUser(UserDto userDto) {
-        log.debug("Calling server to create user {}", userDto.getEmail());
-
-        Map<String, Object> requestBody = Map.of(
-                "name", userDto.getName(),
-                "email", userDto.getEmail()
-        );
-
-        return webClient.post()
-                .uri("/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error))))
-                .bodyToMono(UserDto.class)
-                .block();
+    public UserClient(RestTemplate rest) {
+        super(rest);
     }
 
-    public UserDto updateUser(Long userId, UserDto userDto) {
-        log.debug("Calling server to update user {}", userId);
-
-        Map<String, Object> requestBody = Map.of(
-                "name", userDto.getName(),
-                "email", userDto.getEmail()
-        );
-
-        return webClient.patch()
-                .uri("/users/{userId}", userId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error))))
-                .bodyToMono(UserDto.class)
-                .block();
+    public Object createUser(UserDto userDto) {
+        String path = "/users";
+        ResponseEntity<Object> response = post(path, userDto);
+        return response.getBody();
     }
 
-    public UserDto getUserById(Long userId) {
-        log.debug("Calling server to get user {}", userId);
-
-        return webClient.get()
-                .uri("/users/{userId}", userId)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error))))
-                .bodyToMono(UserDto.class)
-                .block();
+    public Object updateUser(Long userId, UserDto userDto) {
+        String path = "/users/{userId}";
+        Map<String, Object> parameters = Map.of("userId", userId);
+        ResponseEntity<Object> response = patch(path, null, parameters, userDto);
+        return response.getBody();
     }
 
-    public List<UserDto> getAllUsers() {
-        log.debug("Calling server to get all users");
+    public Object getUserById(Long userId) {
+        String path = "/users/{userId}";
+        Map<String, Object> parameters = Map.of("userId", userId);
+        ResponseEntity<Object> response = get(path, parameters.size());
+        return response.getBody();
+    }
 
-        return webClient.get()
-                .uri("/users")
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error))))
-                .bodyToMono(new ParameterizedTypeReference<List<UserDto>>() {})
-                .block();
+    public Object getAllUsers() {
+        String path = "/users";
+        ResponseEntity<Object> response = get(path);
+        return response.getBody();
     }
 
     public void deleteUser(Long userId) {
-        log.debug("Calling server to delete user {}", userId);
-
-        webClient.delete()
-                .uri("/users/{userId}", userId)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(error -> Mono.error(new RuntimeException("Server error: " + error))))
-                .toBodilessEntity()
-                .block();
+        String path = "/users/{userId}";
+        Map<String, Object> parameters = Map.of("userId", userId);
+        delete(path, parameters.size());
     }
 }

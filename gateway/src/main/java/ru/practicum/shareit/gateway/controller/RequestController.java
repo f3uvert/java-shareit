@@ -23,13 +23,13 @@ public class RequestController {
     public ItemRequestDto createRequest(@Valid @RequestBody ItemRequestDto itemRequestDto,
                                         @RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("Gateway: POST /requests | User-ID: {}", requestorId);
-        return requestClient.createRequest(itemRequestDto, requestorId);
+        return (ItemRequestDto) requestClient.createRequest(itemRequestDto, requestorId);
     }
 
     @GetMapping
     public List<ItemRequestWithItemsDto> getRequestsByRequestor(@RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("Gateway: GET /requests | User-ID: {}", requestorId);
-        return requestClient.getRequestsByRequestor(requestorId);
+        return (List<ItemRequestWithItemsDto>) requestClient.getRequestsByRequestor(requestorId);
     }
 
     @GetMapping("/all")
@@ -37,13 +37,13 @@ public class RequestController {
                                                         @RequestParam(defaultValue = "0") int from,
                                                         @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /requests/all | From: {}, Size: {}", from, size);
-        return requestClient.getAllRequests(userId, from, size);
+        return (List<ItemRequestWithItemsDto>) requestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ItemRequestWithItemsDto getRequestById(@PathVariable Long requestId,
                                                   @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Gateway: GET /requests/{}", requestId);
-        return requestClient.getRequestById(requestId, userId);
+        return (ItemRequestWithItemsDto) requestClient.getRequestById(requestId, userId);
     }
 }

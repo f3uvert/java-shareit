@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Map;
 
@@ -54,13 +53,7 @@ public class ErrorHandler {
         return Map.of("error", "Invalid parameter", "message", "Invalid parameter type: " + ex.getName());
     }
 
-    @ExceptionHandler(WebClientResponseException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleWebClientException(WebClientResponseException ex) {
-        log.error("Error from server: {}", ex.getMessage());
-        return Map.of("error", "Server error",
-                "message", ex.getResponseBodyAsString());
-    }
+
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
