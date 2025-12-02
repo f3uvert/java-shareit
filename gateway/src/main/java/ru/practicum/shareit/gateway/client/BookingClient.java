@@ -22,14 +22,6 @@ public class BookingClient {
     private final WebClient webClient;
     private final DtoConverter converter;
 
-    public BookingClient(@Value("${shareit.server.url}") String serverUrl, DtoConverter converter) {
-        this.webClient = WebClient.builder()
-                .baseUrl(serverUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-        this.converter = converter;
-    }
-
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
         log.debug("Calling server to create booking for user {}", bookerId);
 
