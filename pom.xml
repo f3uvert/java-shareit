@@ -152,6 +152,7 @@
                             <version>3.1.2</version>
                         </dependency>
                     </dependencies>
+
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
