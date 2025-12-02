@@ -23,14 +23,6 @@ public class RequestClient {
     private final WebClient webClient;
     private final DtoConverter converter;
 
-    public RequestClient(@Value("${shareit.server.url}") String serverUrl, DtoConverter converter) {
-        this.webClient = WebClient.builder()
-                .baseUrl(serverUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-        this.converter = converter;
-    }
-
     public ItemRequestDto createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
         log.debug("Calling server to create request for user {}", requestorId);
 

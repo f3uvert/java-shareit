@@ -1,11 +1,5 @@
 FROM openjdk:17-jdk-slim
-
 WORKDIR /app
-
-# Копируем JAR файл
-COPY target/shareit-gateway-*.jar app.jar
-
+COPY target/*.jar app.jar
 EXPOSE 8080
-
-# Простой запуск
-ENTRYPOINT ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar"]

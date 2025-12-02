@@ -2,7 +2,6 @@ package ru.practicum.shareit.gateway.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -18,13 +17,6 @@ import java.util.Map;
 @Slf4j
 public class ItemClient {
     private final WebClient webClient;
-
-    public ItemClient(@Value("${shareit.server.url}") String serverUrl) {
-        this.webClient = WebClient.builder()
-                .baseUrl(serverUrl)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
-    }
 
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
         log.debug("Calling server to create item for user {}", ownerId);

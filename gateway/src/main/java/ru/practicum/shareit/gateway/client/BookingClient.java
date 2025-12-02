@@ -22,11 +22,14 @@ public class BookingClient {
     private final WebClient webClient;
     private final DtoConverter converter;
 
+    @Value("${shareit.server.url}")
+    private String serverUrl;
+
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
         log.debug("Calling server to create booking for user {}", bookerId);
 
         return webClient.post()
-                .uri("/bookings")
+                .uri(serverUrl + "/bookings")  // Добавляем базовый URL
                 .header("X-Sharer-User-Id", String.valueOf(bookerId))
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(converter.toServerBookingDto(bookingDto))
@@ -42,7 +45,7 @@ public class BookingClient {
         log.debug("Calling server to approve booking {}", bookingId);
 
         return webClient.patch()
-                .uri("/bookings/{bookingId}?approved={approved}", bookingId, approved)
+                .uri(serverUrl + "/bookings/{bookingId}?approved={approved}", bookingId, approved)
                 .header("X-Sharer-User-Id", String.valueOf(ownerId))
                 .retrieve()
                 .bodyToMono(BookingResponseDto.class)
@@ -53,7 +56,7 @@ public class BookingClient {
         log.debug("Calling server to get booking {}", bookingId);
 
         return webClient.get()
-                .uri("/bookings/{bookingId}", bookingId)
+                .uri(serverUrl + "/bookings/{bookingId}", bookingId)
                 .header("X-Sharer-User-Id", String.valueOf(userId))
                 .retrieve()
                 .bodyToMono(BookingResponseDto.class)
@@ -64,7 +67,8 @@ public class BookingClient {
         log.debug("Calling server to get bookings for booker {}", bookerId);
 
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/bookings")
+                .uri(uriBuilder -> uriBuilder
+                        .path(serverUrl + "/bookings")
                         .queryParam("state", state)
                         .queryParam("from", pageable.getPageNumber() * pageable.getPageSize())
                         .queryParam("size", pageable.getPageSize())
@@ -79,7 +83,8 @@ public class BookingClient {
         log.debug("Calling server to get bookings for owner {}", ownerId);
 
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/bookings/owner")
+                .uri(uriBuilder -> uriBuilder
+                        .path(serverUrl + "/bookings/owner")
                         .queryParam("state", state)
                         .queryParam("from", pageable.getPageNumber() * pageable.getPageSize())
                         .queryParam("size", pageable.getPageSize())

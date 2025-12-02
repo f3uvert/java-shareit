@@ -7,11 +7,12 @@ host="$1"
 shift
 cmd="$@"
 
-echo "Waiting for PostgreSQL at $host..."
+echo "Waiting for PostgreSQL at $host:5432..."
 
-until PGPASSWORD=$POSTGRES_PASSWORD psql -h "$host" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\q'; do
+# Ждем пока PostgreSQL станет доступен
+until PGPASSWORD=shareit psql -h "$host" -U shareit -d shareit -c '\q'; do
   >&2 echo "PostgreSQL is unavailable - sleeping"
-  sleep 1
+  sleep 2
 done
 
 >&2 echo "PostgreSQL is up - executing command"

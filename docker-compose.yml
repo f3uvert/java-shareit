@@ -2,6 +2,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16
+    container_name: shareit-postgres
     environment:
       POSTGRES_DB: shareit
       POSTGRES_USER: shareit
@@ -17,7 +18,10 @@ services:
       retries: 5
 
   server:
-    build: shareit-server
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: shareit-server
     ports:
       - "9090:9090"
     environment:
@@ -28,24 +32,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
 
   gateway:
-    build: shareit-gateway
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: shareit-gateway
     ports:
       - "8080:8080"
     environment:
       SHAREIT_SERVER_URL: http://server:9090
     depends_on:
-      server:
-        condition: service_healthy
-    # НЕ используем wait-for-it.sh для gateway
-    # command: sh -c "sleep 5 && java -jar app.jar"
+      - server
 
 volumes:
   postgres_data:
