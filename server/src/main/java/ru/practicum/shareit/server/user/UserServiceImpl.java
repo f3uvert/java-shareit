@@ -2,7 +2,10 @@ package ru.practicum.shareit.server.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.server.user.dto.UserDto;
 
 import java.util.List;
@@ -10,7 +13,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.server.user.UserMapper.toUserDto;
-
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +32,8 @@ public class UserServiceImpl implements UserService {
             String email = userDto.getEmail().trim();
 
             if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
-                throw new IllegalArgumentException("Email already exists: " + email);
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Email already exists: " + email);
             }
 
             User user = new User();
@@ -41,9 +44,11 @@ public class UserServiceImpl implements UserService {
             log.info("User created successfully: id={}", savedUser.getId());
 
             return toUserDto(savedUser);
+        } catch (ResponseStatusException e) {
+            throw e; // Перебрасываем ResponseStatusException
         } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage(), e);
-            throw e;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
@@ -58,7 +63,8 @@ public class UserServiceImpl implements UserService {
             if (!newEmail.equalsIgnoreCase(existingUser.getEmail())) {
                 userRepository.findByEmailIgnoreCase(newEmail)
                         .ifPresent(user -> {
-                            throw new IllegalArgumentException("Email already exists: " + userDto.getEmail());
+                            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                                    "Email already exists: " + newEmail);
                         });
                 existingUser.setEmail(newEmail);
             }
@@ -68,8 +74,13 @@ public class UserServiceImpl implements UserService {
             existingUser.setName(userDto.getName());
         }
 
-        User updatedUser = userRepository.save(existingUser);
-        return toUserDto(updatedUser);
+        try {
+            User updatedUser = userRepository.save(existingUser);
+            return toUserDto(updatedUser);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Email already exists");
+        }
     }
 
     @Override

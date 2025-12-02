@@ -4,8 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.gateway.client.UserClient;
+import ru.practicum.shareit.gateway.dto.UserDto;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -13,39 +16,57 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @Validated
 public class UserController {
-    private final ru.practicum.shareit.gateway.client.UserClient userClient;
+    private final UserClient userClient;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Object createUser(@Valid @RequestBody ru.practicum.shareit.gateway.dto.UserDto userDto) {
+    public ResponseEntity<Object> createUser(@Valid @RequestBody UserDto userDto) {
         log.info("Gateway: POST /users | Creating user: name='{}', email='{}'",
                 userDto.getName(), userDto.getEmail());
-        return userClient.createUser(userDto);
+
+        ResponseEntity<Object> response = userClient.createUser(userDto);
+        log.info("Gateway: Response status: {}", response.getStatusCode());
+
+        return response;
     }
 
     @PatchMapping("/{userId}")
-    public Object updateUser(@PathVariable Long userId,
-                             @Valid @RequestBody ru.practicum.shareit.gateway.dto.UserDto userDto) {
+    public ResponseEntity<Object> updateUser(@PathVariable Long userId,
+                                             @Valid @RequestBody UserDto userDto) {
         log.info("Gateway: PATCH /users/{} | Updating user", userId);
-        return userClient.updateUser(userId, userDto);
+
+        ResponseEntity<Object> response = userClient.updateUser(userId, userDto);
+        log.info("Gateway: Response status: {}", response.getStatusCode());
+
+        return response;
     }
 
     @GetMapping("/{userId}")
-    public Object getUserById(@PathVariable Long userId) {
+    public ResponseEntity<Object> getUserById(@PathVariable Long userId) {
         log.info("Gateway: GET /users/{} | Getting user by ID", userId);
-        return userClient.getUserById(userId);
+
+        ResponseEntity<Object> response = userClient.getUserById(userId);
+        log.info("Gateway: Response status: {}", response.getStatusCode());
+
+        return response;
     }
 
     @GetMapping
-    public Object getAllUsers() {
+    public ResponseEntity<Object> getAllUsers() {
         log.info("Gateway: GET /users | Getting all users");
-        return userClient.getAllUsers();
+
+        ResponseEntity<Object> response = userClient.getAllUsers();
+        log.info("Gateway: Response status: {}", response.getStatusCode());
+
+        return response;
     }
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<Object> deleteUser(@PathVariable Long userId) {
         log.info("Gateway: DELETE /users/{} | Deleting user", userId);
-        userClient.deleteUser(userId);
+
+        ResponseEntity<Object> response = userClient.deleteUser(userId);
+        log.info("Gateway: Response status: {}", response.getStatusCode());
+
+        return response;
     }
 }

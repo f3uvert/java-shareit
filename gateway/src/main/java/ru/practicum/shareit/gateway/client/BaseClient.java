@@ -23,7 +23,6 @@ public class BaseClient {
         this.rest = rest;
     }
 
-    // GET методы
     protected ResponseEntity<Object> get(String path) {
         return makeAndSendRequest(HttpMethod.GET, buildUrl(path), null, null, null);
     }
@@ -44,50 +43,47 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.GET, buildUrl(path), null, parameters, null);
     }
 
-    // POST методы
-    protected <T> ResponseEntity<Object> post(String path, T body) {
+    protected ResponseEntity<Object> post(String path, Object body) {
         return makeAndSendRequest(HttpMethod.POST, buildUrl(path), null, null, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, long userId, T body) {
+    protected ResponseEntity<Object> post(String path, long userId, Object body) {
         return makeAndSendRequest(HttpMethod.POST, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, Long userId, T body) {
+    protected ResponseEntity<Object> post(String path, Long userId, Object body) {
         return makeAndSendRequest(HttpMethod.POST, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> post(String path, Long userId, @Nullable Map<String, Object> parameters, T body) {
+    protected ResponseEntity<Object> post(String path, Long userId, @Nullable Map<String, Object> parameters, Object body) {
         return makeAndSendRequest(HttpMethod.POST, buildUrl(path), userId, parameters, body);
     }
 
-    // PATCH методы
-    protected <T> ResponseEntity<Object> patch(String path, T body) {
+    protected ResponseEntity<Object> patch(String path, Object body) {
         return makeAndSendRequest(HttpMethod.PATCH, buildUrl(path), null, null, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, long userId, T body) {
+    protected ResponseEntity<Object> patch(String path, long userId, Object body) {
         return makeAndSendRequest(HttpMethod.PATCH, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, Long userId, T body) {
+    protected ResponseEntity<Object> patch(String path, Long userId, Object body) {
         return makeAndSendRequest(HttpMethod.PATCH, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> patch(String path, Long userId, @Nullable Map<String, Object> parameters, T body) {
+    protected ResponseEntity<Object> patch(String path, Long userId, @Nullable Map<String, Object> parameters, Object body) {
         return makeAndSendRequest(HttpMethod.PATCH, buildUrl(path), userId, parameters, body);
     }
 
-    // PUT методы
-    protected <T> ResponseEntity<Object> put(String path, long userId, T body) {
+    protected ResponseEntity<Object> put(String path, long userId, Object body) {
         return makeAndSendRequest(HttpMethod.PUT, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, Long userId, T body) {
+    protected ResponseEntity<Object> put(String path, Long userId, Object body) {
         return makeAndSendRequest(HttpMethod.PUT, buildUrl(path), userId, null, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, Long userId, @Nullable Map<String, Object> parameters, T body) {
+    protected ResponseEntity<Object> put(String path, Long userId, @Nullable Map<String, Object> parameters, Object body) {
         return makeAndSendRequest(HttpMethod.PUT, buildUrl(path), userId, parameters, body);
     }
 
@@ -108,11 +104,10 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.DELETE, buildUrl(path), userId, parameters, null);
     }
 
-    // Основной метод для отправки запросов
-    private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String url, @Nullable Long userId,
-                                                          @Nullable Map<String, Object> parameters,
-                                                          @Nullable T body) {
-        HttpEntity<T> requestEntity = new HttpEntity<>(body, createHeaders(userId));
+    private ResponseEntity<Object> makeAndSendRequest(HttpMethod method, String url, @Nullable Long userId,
+                                                      @Nullable Map<String, Object> parameters,
+                                                      @Nullable Object body) {
+        HttpEntity<Object> requestEntity = new HttpEntity<>(body, createHeaders(userId));
 
         log.debug("Making {} request to {} with userId: {}, params: {}",
                 method, url, userId, parameters);
@@ -126,14 +121,16 @@ public class BaseClient {
             }
         } catch (HttpStatusCodeException e) {
             log.error("Error making request to {}: {} - {}", url, e.getStatusCode(), e.getResponseBodyAsString());
-            return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
+            // Возвращаем ResponseEntity с ошибкой от сервера
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(e.getResponseBodyAsString());
         } catch (Exception e) {
             log.error("Unexpected error making request to {}: {}", url, e.getMessage(), e);
             throw e;
         }
 
         log.debug("Response from {}: {}", url, response.getStatusCode());
-        return prepareResponse(response);
+        return response;
     }
 
     private HttpHeaders createHeaders(@Nullable Long userId) {
@@ -144,19 +141,6 @@ public class BaseClient {
             headers.set("X-Sharer-User-Id", String.valueOf(userId));
         }
         return headers;
-    }
-
-    private ResponseEntity<Object> prepareResponse(ResponseEntity<Object> response) {
-        if (response.getStatusCode().is2xxSuccessful()) {
-            return response;
-        }
-
-        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(response.getStatusCode());
-        if (response.hasBody()) {
-            return responseBuilder.body(response.getBody());
-        }
-
-        return responseBuilder.build();
     }
 
     private String buildUrl(String path) {
