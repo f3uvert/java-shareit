@@ -69,6 +69,11 @@
                             <artifactId>checkstyle</artifactId>
                             <version>10.3</version>
                         </dependency>
+                        <dependency>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-deploy-plugin</artifactId>
+                            <version>3.1.2</version>
+                        </dependency>
                     </dependencies>
                 </plugin>
                 <plugin>
