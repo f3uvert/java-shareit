@@ -5,7 +5,7 @@
         <artifactId>shareit</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>server</artifactId>
+    <artifactId>shareit-server</artifactId>
     <name>ShareIt Server</name>
     <dependencies>
         <dependency>
