@@ -22,7 +22,7 @@ public class BookingClient extends BaseClient {
     public Object createBooking(BookingDto bookingDto, Long bookerId) {
         String path = "/bookings";
         Map<String, Object> requestBody = dtoConverter.toServerBookingDto(bookingDto);
-        log.debug("Creating booking: {}", requestBody);
+        log.debug("Creating booking for user {}: {}", bookerId, requestBody);
         return post(path, bookerId, requestBody).getBody();
     }
 
@@ -32,7 +32,7 @@ public class BookingClient extends BaseClient {
                 "bookingId", bookingId,
                 "approved", approved
         );
-        log.debug("Approving booking {}: approved={}", bookingId, approved);
+        log.debug("Approving booking {} by user {}: approved={}", bookingId, ownerId, approved);
         return patch(path, ownerId, parameters, null).getBody();
     }
 

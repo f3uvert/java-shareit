@@ -89,7 +89,6 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.PUT, buildUrl(path), userId, parameters, body);
     }
 
-    // DELETE методы
     protected ResponseEntity<Object> delete(String path) {
         return makeAndSendRequest(HttpMethod.DELETE, buildUrl(path), null, null, null);
     }
@@ -111,8 +110,8 @@ public class BaseClient {
                                                       @Nullable Object body) {
         HttpEntity<Object> requestEntity = new HttpEntity<>(body, createHeaders(userId));
 
-        log.debug("Making {} request to {} with userId: {}, params: {}",
-                method, url, userId, parameters);
+        log.debug("Making {} request to {} with userId: {}, body: {}",
+                method, url, userId, body);
 
         try {
             ResponseEntity<Object> response;
@@ -122,17 +121,17 @@ public class BaseClient {
                 response = rest.exchange(url, method, requestEntity, Object.class);
             }
 
-            log.debug("Successful response from {}: {}", url, response.getStatusCode());
+            log.debug("Response from {}: {}", url, response.getStatusCode());
             return response;
 
         } catch (HttpStatusCodeException e) {
-            log.error("Error from server {}: {} - {}", url, e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("HTTP error from {}: {} - Body: {}", url, e.getStatusCode(),
+                    e.getResponseBodyAsString());
 
             try {
                 Object errorBody = objectMapper.readValue(e.getResponseBodyAsString(), Object.class);
                 return ResponseEntity.status(e.getStatusCode()).body(errorBody);
             } catch (Exception ex) {
-                // Если не JSON, возвращаем как текст
                 return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
             }
         } catch (Exception e) {

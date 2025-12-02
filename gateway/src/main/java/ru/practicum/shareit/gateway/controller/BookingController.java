@@ -3,7 +3,6 @@ package ru.practicum.shareit.gateway.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.gateway.client.BookingClient;
@@ -18,42 +17,44 @@ public class BookingController {
     private final BookingClient bookingClient;
 
     @PostMapping
-    public ResponseEntity<Object> createBooking(@Valid @RequestBody BookingDto bookingDto,
-                                                @RequestHeader("X-Sharer-User-Id") Long bookerId) {
+    public Object createBooking(@Valid @RequestBody BookingDto bookingDto,
+                                @RequestHeader("X-Sharer-User-Id") Long bookerId) {
         log.info("Gateway: POST /bookings | User-ID: {}", bookerId);
-        return (ResponseEntity<Object>) bookingClient.createBooking(bookingDto, bookerId);
+        Object response = bookingClient.createBooking(bookingDto, bookerId);
+        log.info("Gateway: Booking response type: {}", response.getClass().getSimpleName());
+        return response;
     }
 
     @PatchMapping("/{bookingId}")
-    public ResponseEntity<Object> approveBooking(@PathVariable Long bookingId,
-                                                 @RequestParam boolean approved,
-                                                 @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public Object approveBooking(@PathVariable Long bookingId,
+                                 @RequestParam boolean approved,
+                                 @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: PATCH /bookings/{} | Approved: {}", bookingId, approved);
-        return (ResponseEntity<Object>) bookingClient.approveBooking(bookingId, ownerId, approved);
+        return bookingClient.approveBooking(bookingId, ownerId, approved);
     }
 
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Object> getBookingById(@PathVariable Long bookingId,
-                                                 @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Object getBookingById(@PathVariable Long bookingId,
+                                 @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Gateway: GET /bookings/{}", bookingId);
-        return (ResponseEntity<Object>) bookingClient.getBookingById(bookingId, userId);
+        return bookingClient.getBookingById(bookingId, userId);
     }
 
     @GetMapping
-    public ResponseEntity<Object> getBookingsByBooker(@RequestHeader("X-Sharer-User-Id") Long bookerId,
-                                                      @RequestParam(defaultValue = "ALL") String state,
-                                                      @RequestParam(defaultValue = "0") int from,
-                                                      @RequestParam(defaultValue = "10") int size) {
+    public Object getBookingsByBooker(@RequestHeader("X-Sharer-User-Id") Long bookerId,
+                                      @RequestParam(defaultValue = "ALL") String state,
+                                      @RequestParam(defaultValue = "0") int from,
+                                      @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /bookings | State: {}", state);
-        return (ResponseEntity<Object>) bookingClient.getBookingsByBooker(bookerId, state, from, size);
+        return bookingClient.getBookingsByBooker(bookerId, state, from, size);
     }
 
     @GetMapping("/owner")
-    public ResponseEntity<Object> getBookingsByOwner(@RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                                     @RequestParam(defaultValue = "ALL") String state,
-                                                     @RequestParam(defaultValue = "0") int from,
-                                                     @RequestParam(defaultValue = "10") int size) {
+    public Object getBookingsByOwner(@RequestHeader("X-Sharer-User-Id") Long ownerId,
+                                     @RequestParam(defaultValue = "ALL") String state,
+                                     @RequestParam(defaultValue = "0") int from,
+                                     @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /bookings/owner | State: {}", state);
-        return (ResponseEntity<Object>) bookingClient.getBookingsByOwner(ownerId, state, from, size);
+        return bookingClient.getBookingsByOwner(ownerId, state, from, size);
     }
 }

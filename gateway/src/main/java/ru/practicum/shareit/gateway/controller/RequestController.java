@@ -16,8 +16,8 @@ public class RequestController {
     private final ru.practicum.shareit.gateway.client.RequestClient requestClient;
 
     @PostMapping
-    public ResponseEntity<Object> createRequest(@Valid @RequestBody ru.practicum.shareit.gateway.dto.ItemRequestDto itemRequestDto,
-                                                @RequestHeader("X-Sharer-User-Id") Long requestorId) {
+    public Object createRequest(@Valid @RequestBody ru.practicum.shareit.gateway.dto.ItemRequestDto itemRequestDto,
+                                @RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("Gateway: POST /requests | User-ID: {}", requestorId);
         return requestClient.createRequest(itemRequestDto, requestorId);
     }

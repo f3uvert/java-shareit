@@ -20,11 +20,11 @@ public class UserClient extends BaseClient {
         this.dtoConverter = dtoConverter;
     }
 
-    public ResponseEntity<Object> createUser(UserDto userDto) {
+    public Object createUser(UserDto userDto) {
         String path = "/users";
         Map<String, Object> requestBody = dtoConverter.toServerUserDto(userDto);
         log.debug("Creating user: {}", userDto.getEmail());
-        return post(path, requestBody);
+        return post(path, requestBody).getBody();
     }
 
     public ResponseEntity<Object> updateUser(Long userId, UserDto userDto) {

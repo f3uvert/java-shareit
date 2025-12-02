@@ -16,7 +16,7 @@ public class UserController {
     private final ru.practicum.shareit.gateway.client.UserClient userClient;
 
     @PostMapping
-    public ResponseEntity<Object> createUser(@Valid @RequestBody ru.practicum.shareit.gateway.dto.UserDto userDto) {
+    public Object createUser(@Valid @RequestBody ru.practicum.shareit.gateway.dto.UserDto userDto) {
         log.info("Gateway: POST /users | Creating user: name='{}', email='{}'",
                 userDto.getName(), userDto.getEmail());
         return userClient.createUser(userDto);

@@ -21,17 +21,10 @@ public class ItemController {
     private final ItemClient itemClient;
 
     @PostMapping
-    public ResponseEntity<Object> createItem(@Valid @RequestBody ItemDto itemDto,
-                                             @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public Object createItem(@Valid @RequestBody ru.practicum.shareit.gateway.dto.ItemDto itemDto,
+                             @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: POST /items | User-ID: {}", ownerId);
-
-        // Логируем requestId для отладки
-        log.debug("Creating item with requestId: {}", itemDto.getRequestId());
-
-        ResponseEntity<Object> response = (ResponseEntity<Object>) itemClient.createItem(itemDto, ownerId);
-        log.info("Gateway: Create item response status: {}", response.getStatusCode());
-
-        return response;
+        return itemClient.createItem(itemDto, ownerId);
     }
 
     @PostMapping("/{itemId}/comment")

@@ -26,7 +26,7 @@ public class ItemClient extends BaseClient {
     public Object createItem(ItemDto itemDto, Long ownerId) {
         String path = "/items";
         Map<String, Object> requestBody = dtoConverter.toServerItemDto(itemDto);
-        log.debug("Sending item creation request: {}", requestBody);
+        log.debug("Creating item: {} for owner {}", itemDto.getName(), ownerId);
         return post(path, ownerId, requestBody).getBody();
     }
 
