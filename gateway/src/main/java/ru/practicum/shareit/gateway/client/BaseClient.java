@@ -1,5 +1,6 @@
 package ru.practicum.shareit.gateway.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Slf4j
 public class BaseClient {
     protected final RestTemplate rest;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${shareit.server.url}")
     protected String serverUrl;
@@ -120,20 +122,18 @@ public class BaseClient {
                 response = rest.exchange(url, method, requestEntity, Object.class);
             }
 
-            log.debug("Response from {}: {} {}", url, response.getStatusCode(),
-                    response.getBody() != null ? response.getBody().getClass().getSimpleName() : "null");
+            log.debug("Successful response from {}: {}", url, response.getStatusCode());
             return response;
 
         } catch (HttpStatusCodeException e) {
-            log.error("Error making request to {}: {} - {}", url, e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Error from server {}: {} - {}", url, e.getStatusCode(), e.getResponseBodyAsString());
 
             try {
-                return ResponseEntity.status(e.getStatusCode())
-                        .body(e.getResponseBodyAsString());
+                Object errorBody = objectMapper.readValue(e.getResponseBodyAsString(), Object.class);
+                return ResponseEntity.status(e.getStatusCode()).body(errorBody);
             } catch (Exception ex) {
-                return ResponseEntity.status(e.getStatusCode())
-                        .body(Map.of("error", e.getStatusText(),
-                                "message", e.getResponseBodyAsString()));
+                // Если не JSON, возвращаем как текст
+                return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsString());
             }
         } catch (Exception e) {
             log.error("Unexpected error making request to {}: {}", url, e.getMessage(), e);

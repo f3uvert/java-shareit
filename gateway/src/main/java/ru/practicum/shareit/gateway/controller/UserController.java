@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.gateway.client.UserClient;
 import ru.practicum.shareit.gateway.dto.UserDto;
+import ru.practicum.shareit.gateway.dto.UserUpdateDto;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -30,9 +31,10 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<Object> updateUser(@PathVariable Long userId,
-                                             @Valid @RequestBody UserDto userDto) {
+                                             @Valid @RequestBody UserUpdateDto userUpdateDto) {
         log.info("Gateway: PATCH /users/{} | Updating user", userId);
 
+        UserDto userDto = new UserDto(userUpdateDto.getId(), userUpdateDto.getName(), userUpdateDto.getEmail());
         ResponseEntity<Object> response = userClient.updateUser(userId, userDto);
         log.info("Gateway: Response status: {}", response.getStatusCode());
 

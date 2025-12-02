@@ -20,11 +20,11 @@ public class RequestClient extends BaseClient {
         this.dtoConverter = dtoConverter;
     }
 
-    public Object createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
+    public ResponseEntity<Object> createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
         String path = "/requests";
         Map<String, Object> requestBody = dtoConverter.toServerItemRequestDto(itemRequestDto);
-        log.debug("Creating request: {}", requestBody);
-        return post(path, requestorId, requestBody).getBody();
+        log.debug("Creating request for user {}", requestorId);
+        return post(path, requestorId, requestBody);
     }
 
     public Object getRequestsByRequestor(Long requestorId) {
