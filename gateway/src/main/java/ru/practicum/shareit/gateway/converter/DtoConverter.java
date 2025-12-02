@@ -1,16 +1,15 @@
 package ru.practicum.shareit.gateway.converter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.gateway.dto.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Slf4j
 public class DtoConverter {
 
     public Map<String, Object> toServerUserDto(UserDto gatewayDto) {
@@ -90,6 +89,7 @@ public class DtoConverter {
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     public BookingDto toGatewayBookingDto(Map<String, Object> serverResponse) {
         BookingDto dto = new BookingDto();
 
@@ -159,6 +159,7 @@ public class DtoConverter {
         return map;
     }
 
+    @SuppressWarnings("unchecked")
     public ItemRequestDto toGatewayItemRequestDto(Map<String, Object> serverResponse) {
         ItemRequestDto dto = new ItemRequestDto();
 
@@ -289,13 +290,12 @@ public class DtoConverter {
             dto.setBooker(userDto);
         }
 
-
         if (serverResponse.get("status") != null) {
             String status = serverResponse.get("status").toString();
             try {
                 dto.setStatus(BookingStatus.valueOf(status));
             } catch (IllegalArgumentException ignored) {
-
+                // Оставляем статус null
             }
         }
 
@@ -360,14 +360,19 @@ public class DtoConverter {
             }
         }
 
-        if (serverResponse.get("comments") != null && serverResponse.get("comments") instanceof List) {
+        if (serverResponse.get("comments") != null) {
             try {
-                List<Map<String, Object>> commentsList = (List<Map<String, Object>>) serverResponse.get("comments");
-                List<CommentResponseDto> comments = commentsList.stream()
-                        .map(this::toGatewayCommentResponseDto)
-                        .collect(Collectors.toList());
-                dto.setComments(comments);
+                if (serverResponse.get("comments") instanceof List) {
+                    List<Map<String, Object>> commentsList = (List<Map<String, Object>>) serverResponse.get("comments");
+                    List<CommentResponseDto> comments = commentsList.stream()
+                            .map(this::toGatewayCommentResponseDto)
+                            .collect(Collectors.toList());
+                    dto.setComments(comments);
+                } else {
+                    dto.setComments(Collections.emptyList());
+                }
             } catch (ClassCastException e) {
+                log.error("Error casting comments: {}", e.getMessage());
                 dto.setComments(Collections.emptyList());
             }
         } else {
@@ -390,5 +395,39 @@ public class DtoConverter {
                 .map(this::toGatewayItemWithBookingsDto)
                 .collect(Collectors.toList());
     }
-}
 
+    @SuppressWarnings("unchecked")
+    private CommentResponseDto convertToCommentResponseDto(Map<String, Object> serverResponse) {
+        CommentResponseDto dto = new CommentResponseDto();
+
+        if (serverResponse.get("id") != null) {
+            dto.setId(((Number) serverResponse.get("id")).longValue());
+        }
+
+        if (serverResponse.get("text") != null) {
+            dto.setText(serverResponse.get("text").toString());
+        }
+
+        if (serverResponse.get("authorName") != null) {
+            dto.setAuthorName(serverResponse.get("authorName").toString());
+        } else if (serverResponse.get("author") != null) {
+            Object author = serverResponse.get("author");
+            if (author instanceof Map) {
+                Map<String, Object> authorMap = (Map<String, Object>) author;
+                if (authorMap.get("name") != null) {
+                    dto.setAuthorName(authorMap.get("name").toString());
+                }
+            }
+        }
+
+        if (serverResponse.get("created") != null) {
+            try {
+                dto.setCreated(LocalDateTime.parse(serverResponse.get("created").toString()));
+            } catch (Exception e) {
+                log.error("Error parsing created date: {}", e.getMessage());
+            }
+        }
+
+        return dto;
+    }
+}
