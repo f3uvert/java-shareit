@@ -23,11 +23,7 @@ public class ItemController {
                               @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("POST /items | User-ID: {} | Item: {} | RequestId: {}",
                 ownerId, itemDto.getName(), itemDto.getRequestId());
-
-        ItemDto result = itemService.createItem(itemDto, ownerId);
-        log.info("POST /items | Created item ID: {}", result.getId());
-
-        return result;
+        return itemService.createItem(itemDto, ownerId);
     }
 
     @PostMapping("/{itemId}/comment")

@@ -35,28 +35,51 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(ItemDto itemDto, Long ownerId) {
-        User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
+        log.info("Creating item: name='{}' for ownerId={}", itemDto.getName(), ownerId);
 
-        if (itemDto.getAvailable() == null) {
-            throw new IllegalArgumentException("Available cannot be null");
+        try {
+            User owner = userRepository.findById(ownerId)
+                    .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
+
+            if (itemDto.getName() == null || itemDto.getName().isBlank()) {
+                throw new ValidationException("Item name cannot be blank");
+            }
+
+            if (itemDto.getDescription() == null || itemDto.getDescription().isBlank()) {
+                throw new ValidationException("Item description cannot be blank");
+            }
+
+            if (itemDto.getAvailable() == null) {
+                throw new ValidationException("Item availability cannot be null");
+            }
+
+            Item item = new Item();
+            item.setName(itemDto.getName().trim());
+            item.setDescription(itemDto.getDescription().trim());
+            item.setAvailable(itemDto.getAvailable());
+            item.setOwner(owner);
+
+            // Обработка requestId если указан
+            if (itemDto.getRequestId() != null) {
+                ItemRequest request = itemRequestRepository.findById(itemDto.getRequestId())
+                        .orElseThrow(() -> new NoSuchElementException(
+                                "Item request not found with id: " + itemDto.getRequestId()));
+                item.setRequest(request);
+                log.debug("Item created for requestId: {}", itemDto.getRequestId());
+            }
+
+            Item savedItem = itemRepository.save(item);
+            log.info("Item created successfully with id: {}", savedItem.getId());
+
+            return ItemMapper.toItemDto(savedItem);
+
+        } catch (NoSuchElementException | ValidationException e) {
+            log.error("Error creating item: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error creating item: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create item: " + e.getMessage());
         }
-
-        Item item = new Item();
-        item.setName(itemDto.getName());
-        item.setDescription(itemDto.getDescription());
-        item.setAvailable(itemDto.getAvailable());
-        item.setOwner(owner);
-
-        if (itemDto.getRequestId() != null) {
-            ItemRequest request = itemRequestRepository.findById(itemDto.getRequestId())
-                    .orElseThrow(() -> new NoSuchElementException(
-                            "Item request not found with id: " + itemDto.getRequestId()));
-            item.setRequest(request);
-        }
-
-        Item savedItem = itemRepository.save(item);
-        return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
