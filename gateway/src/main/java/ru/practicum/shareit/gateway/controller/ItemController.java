@@ -20,49 +20,49 @@ public class ItemController {
     private final ItemClient itemClient;
 
     @PostMapping
-    public ItemDto createItem(@Valid @RequestBody ItemDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public Object createItem(@Valid @RequestBody ItemDto itemDto,
+                             @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: POST /items | User-ID: {}", ownerId);
-        return (ItemDto) itemClient.createItem(itemDto, ownerId);
+        return itemClient.createItem(itemDto, ownerId);
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentResponseDto addComment(@PathVariable Long itemId,
-                                         @Valid @RequestBody CommentDto commentDto,
-                                         @RequestHeader("X-Sharer-User-Id") Long authorId) {
+    public Object addComment(@PathVariable Long itemId,
+                             @Valid @RequestBody CommentDto commentDto,
+                             @RequestHeader("X-Sharer-User-Id") Long authorId) {
         log.info("Gateway: POST /items/{}/comment", itemId);
-        return (CommentResponseDto) itemClient.addComment(itemId, commentDto, authorId);
+        return itemClient.addComment(itemId, commentDto, authorId);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@PathVariable Long itemId,
-                              @Valid @RequestBody ItemUpdateDto itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public Object updateItem(@PathVariable Long itemId,
+                             @Valid @RequestBody ItemUpdateDto itemDto,
+                             @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         log.info("Gateway: PATCH /items/{}", itemId);
-        return (ItemDto) itemClient.updateItem(itemId, itemDto, ownerId);
+        return itemClient.updateItem(itemId, itemDto, ownerId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemWithBookingsDto getItemById(@PathVariable Long itemId,
-                                           @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Object getItemById(@PathVariable Long itemId,
+                              @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Gateway: GET /items/{}", itemId);
-        return (ItemWithBookingsDto) itemClient.getItemById(itemId, userId);
+        return itemClient.getItemById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemWithBookingsDto> getItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long ownerId,
-                                                     @RequestParam(defaultValue = "0") int from,
-                                                     @RequestParam(defaultValue = "10") int size) {
+    public Object getItemsByOwner(@RequestHeader("X-Sharer-User-Id") Long ownerId,
+                                  @RequestParam(defaultValue = "0") int from,
+                                  @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /items | Owner-ID: {}", ownerId);
-        return (List<ItemWithBookingsDto>) itemClient.getItemsByOwner(ownerId, from, size);
+        return itemClient.getItemsByOwner(ownerId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItems(@RequestParam String text,
-                                     @RequestParam(defaultValue = "0") int from,
-                                     @RequestParam(defaultValue = "10") int size) {
+    public Object searchItems(@RequestParam String text,
+                              @RequestParam(defaultValue = "0") int from,
+                              @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /items/search | Text: '{}'", text);
-        return (List<ItemDto>) itemClient.searchItems(text, from, size);
+        return itemClient.searchItems(text, from, size);
     }
 
     private String getUpdatedFields(ItemUpdateDto itemDto) {

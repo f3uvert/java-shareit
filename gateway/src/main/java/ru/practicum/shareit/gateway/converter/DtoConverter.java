@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.gateway.dto.*;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,41 +323,55 @@ public class DtoConverter {
         }
 
         if (serverResponse.get("lastBooking") != null) {
-            Map<String, Object> bookingMap = (Map<String, Object>) serverResponse.get("lastBooking");
-            ItemWithBookingsDto.BookingInfoDto bookingDto = new ItemWithBookingsDto.BookingInfoDto();
+            try {
+                Map<String, Object> bookingMap = (Map<String, Object>) serverResponse.get("lastBooking");
+                ItemWithBookingsDto.BookingInfoDto bookingDto = new ItemWithBookingsDto.BookingInfoDto();
 
-            if (bookingMap.get("id") != null) {
-                bookingDto.setId(((Number) bookingMap.get("id")).longValue());
+                if (bookingMap.get("id") != null) {
+                    bookingDto.setId(((Number) bookingMap.get("id")).longValue());
+                }
+
+                if (bookingMap.get("bookerId") != null) {
+                    bookingDto.setBookerId(((Number) bookingMap.get("bookerId")).longValue());
+                }
+
+                dto.setLastBooking(bookingDto);
+            } catch (ClassCastException e) {
+                dto.setLastBooking(null);
             }
-
-            if (bookingMap.get("bookerId") != null) {
-                bookingDto.setBookerId(((Number) bookingMap.get("bookerId")).longValue());
-            }
-
-            dto.setLastBooking(bookingDto);
         }
 
         if (serverResponse.get("nextBooking") != null) {
-            Map<String, Object> bookingMap = (Map<String, Object>) serverResponse.get("nextBooking");
-            ItemWithBookingsDto.BookingInfoDto bookingDto = new ItemWithBookingsDto.BookingInfoDto();
+            try {
+                Map<String, Object> bookingMap = (Map<String, Object>) serverResponse.get("nextBooking");
+                ItemWithBookingsDto.BookingInfoDto bookingDto = new ItemWithBookingsDto.BookingInfoDto();
 
-            if (bookingMap.get("id") != null) {
-                bookingDto.setId(((Number) bookingMap.get("id")).longValue());
+                if (bookingMap.get("id") != null) {
+                    bookingDto.setId(((Number) bookingMap.get("id")).longValue());
+                }
+
+                if (bookingMap.get("bookerId") != null) {
+                    bookingDto.setBookerId(((Number) bookingMap.get("bookerId")).longValue());
+                }
+
+                dto.setNextBooking(bookingDto);
+            } catch (ClassCastException e) {
+                dto.setNextBooking(null);
             }
-
-            if (bookingMap.get("bookerId") != null) {
-                bookingDto.setBookerId(((Number) bookingMap.get("bookerId")).longValue());
-            }
-
-            dto.setNextBooking(bookingDto);
         }
 
         if (serverResponse.get("comments") != null && serverResponse.get("comments") instanceof List) {
-            List<Map<String, Object>> commentsList = (List<Map<String, Object>>) serverResponse.get("comments");
-            List<CommentResponseDto> comments = commentsList.stream()
-                    .map(this::toGatewayCommentResponseDto)
-                    .collect(Collectors.toList());
-            dto.setComments(comments);
+            try {
+                List<Map<String, Object>> commentsList = (List<Map<String, Object>>) serverResponse.get("comments");
+                List<CommentResponseDto> comments = commentsList.stream()
+                        .map(this::toGatewayCommentResponseDto)
+                        .collect(Collectors.toList());
+                dto.setComments(comments);
+            } catch (ClassCastException e) {
+                dto.setComments(Collections.emptyList());
+            }
+        } else {
+            dto.setComments(Collections.emptyList());
         }
 
         if (serverResponse.get("requestId") != null) {
@@ -366,4 +381,14 @@ public class DtoConverter {
         return dto;
     }
 
+    public List<ItemWithBookingsDto> toGatewayItemWithBookingsDtoList(List<Map<String, Object>> serverResponses) {
+        if (serverResponses == null || serverResponses.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return serverResponses.stream()
+                .map(this::toGatewayItemWithBookingsDto)
+                .collect(Collectors.toList());
+    }
 }
+

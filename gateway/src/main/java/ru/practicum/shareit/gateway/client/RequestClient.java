@@ -1,27 +1,35 @@
 package ru.practicum.shareit.gateway.client;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.shareit.gateway.converter.DtoConverter;
 import ru.practicum.shareit.gateway.dto.ItemRequestDto;
 
 import java.util.Map;
 
 @Service
+@Slf4j
 public class RequestClient extends BaseClient {
 
-    public RequestClient(RestTemplate rest) {
+    private final DtoConverter dtoConverter;
+
+    public RequestClient(RestTemplate rest, DtoConverter dtoConverter) {
         super(rest);
+        this.dtoConverter = dtoConverter;
     }
 
     public Object createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
         String path = "/requests";
-        ResponseEntity<Object> response = post(path, requestorId, itemRequestDto);
-        return response.getBody();
+        Map<String, Object> requestBody = dtoConverter.toServerItemRequestDto(itemRequestDto);
+        log.debug("Creating request: {}", requestBody);
+        return post(path, requestorId, requestBody).getBody();
     }
 
     public Object getRequestsByRequestor(Long requestorId) {
         String path = "/requests";
+        log.debug("Getting requests for requestor {}", requestorId);
         ResponseEntity<Object> response = get(path, requestorId);
         return response.getBody();
     }
@@ -32,6 +40,7 @@ public class RequestClient extends BaseClient {
                 "from", from,
                 "size", size
         );
+        log.debug("Getting all requests for user {}", userId);
         ResponseEntity<Object> response = get(path, userId, parameters);
         return response.getBody();
     }
@@ -39,6 +48,7 @@ public class RequestClient extends BaseClient {
     public Object getRequestById(Long requestId, Long userId) {
         String path = "/requests/{requestId}";
         Map<String, Object> parameters = Map.of("requestId", requestId);
+        log.debug("Getting request {} for user {}", requestId, userId);
         ResponseEntity<Object> response = get(path, userId, parameters);
         return response.getBody();
     }
