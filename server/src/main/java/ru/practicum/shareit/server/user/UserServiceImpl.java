@@ -10,6 +10,7 @@ import ru.practicum.shareit.server.user.dto.UserDto;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.server.user.UserMapper.toUserDto;
@@ -19,6 +20,14 @@ import static ru.practicum.shareit.server.user.UserMapper.toUserDto;
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
+
+    private boolean isValidEmail(String email) {
+        return email != null && EMAIL_PATTERN.matcher(email).matches();
+    }
 
     @Override
     public UserDto createUser(UserDto userDto) {
@@ -30,6 +39,11 @@ public class UserServiceImpl implements UserService {
             }
 
             String email = userDto.getEmail().trim();
+
+            if (!isValidEmail(email)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid email format: " + email);
+            }
 
             if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -45,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
             return toUserDto(savedUser);
         } catch (ResponseStatusException e) {
-            throw e; // Перебрасываем ResponseStatusException
+            throw e;
         } catch (Exception e) {
             log.error("Error creating user: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -59,6 +73,11 @@ public class UserServiceImpl implements UserService {
 
         if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
             String newEmail = userDto.getEmail().trim();
+
+            if (!isValidEmail(newEmail)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Invalid email format: " + newEmail);
+            }
 
             if (!newEmail.equalsIgnoreCase(existingUser.getEmail())) {
                 userRepository.findByEmailIgnoreCase(newEmail)
@@ -80,6 +99,8 @@ public class UserServiceImpl implements UserService {
         } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Email already exists");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
