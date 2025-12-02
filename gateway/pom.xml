@@ -92,32 +92,9 @@
 
     <build>
         <plugins>
-            <!-- Spring Boot Maven Plugin - ОБЯЗАТЕЛЬНО для executable JAR -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <mainClass>ru.practicum.ShareItGateway</mainClass>
-                    <layout>JAR</layout>
-                    <executable>true</executable>
-                    <classifier>exec</classifier>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>ru.practicum.ShareItGateway</mainClass>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
