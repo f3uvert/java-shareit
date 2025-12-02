@@ -83,11 +83,11 @@ public class ItemClient extends BaseClient {
         return get(path, null, parameters).getBody();
     }
 
-    public Object addComment(Long itemId, CommentDto commentDto, Long authorId) {
+    public ResponseEntity<Object> addComment(Long itemId, CommentDto commentDto, Long authorId) {
         String path = "/items/{itemId}/comment";
         Map<String, Object> parameters = Map.of("itemId", itemId);
         Map<String, Object> requestBody = dtoConverter.toServerCommentDto(commentDto);
-        log.debug("Adding comment to item {}: {}", itemId, requestBody);
-        return post(path, authorId, parameters, requestBody).getBody();
+        log.debug("Adding comment to item {} by user {}", itemId, authorId);
+        return post(path, authorId, parameters, requestBody);
     }
 }

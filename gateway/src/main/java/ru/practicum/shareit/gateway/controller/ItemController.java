@@ -3,6 +3,7 @@ package ru.practicum.shareit.gateway.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.gateway.client.ItemClient;
@@ -27,11 +28,14 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public Object addComment(@PathVariable Long itemId,
-                             @Valid @RequestBody CommentDto commentDto,
-                             @RequestHeader("X-Sharer-User-Id") Long authorId) {
-        log.info("Gateway: POST /items/{}/comment", itemId);
-        return itemClient.addComment(itemId, commentDto, authorId);
+    public ResponseEntity<Object> addComment(@PathVariable Long itemId,
+                                             @Valid @RequestBody CommentDto commentDto,
+                                             @RequestHeader("X-Sharer-User-Id") Long authorId) {
+        log.info("Gateway: POST /items/{}/comment by user {}", itemId, authorId);
+
+        ResponseEntity<Object> response = itemClient.addComment(itemId, commentDto, authorId);
+        log.info("Gateway: Comment response status: {}", response.getStatusCode());
+        return response;
     }
 
     @PatchMapping("/{itemId}")

@@ -112,25 +112,33 @@ public class BaseClient {
         log.debug("Making {} request to {} with userId: {}, params: {}",
                 method, url, userId, parameters);
 
-        ResponseEntity<Object> response;
         try {
+            ResponseEntity<Object> response;
             if (parameters != null) {
                 response = rest.exchange(url, method, requestEntity, Object.class, parameters);
             } else {
                 response = rest.exchange(url, method, requestEntity, Object.class);
             }
+
+            log.debug("Response from {}: {} {}", url, response.getStatusCode(),
+                    response.getBody() != null ? response.getBody().getClass().getSimpleName() : "null");
+            return response;
+
         } catch (HttpStatusCodeException e) {
             log.error("Error making request to {}: {} - {}", url, e.getStatusCode(), e.getResponseBodyAsString());
-            // Возвращаем ResponseEntity с ошибкой от сервера
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(e.getResponseBodyAsString());
+
+            try {
+                return ResponseEntity.status(e.getStatusCode())
+                        .body(e.getResponseBodyAsString());
+            } catch (Exception ex) {
+                return ResponseEntity.status(e.getStatusCode())
+                        .body(Map.of("error", e.getStatusText(),
+                                "message", e.getResponseBodyAsString()));
+            }
         } catch (Exception e) {
             log.error("Unexpected error making request to {}: {}", url, e.getMessage(), e);
             throw e;
         }
-
-        log.debug("Response from {}: {}", url, response.getStatusCode());
-        return response;
     }
 
     private HttpHeaders createHeaders(@Nullable Long userId) {
