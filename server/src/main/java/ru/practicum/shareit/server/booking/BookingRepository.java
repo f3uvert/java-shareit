@@ -13,50 +13,19 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByBookerIdOrderByStartDesc(Long bookerId, Pageable pageable);
 
-    List<Booking> findByItemOwnerIdOrderByStartDesc(Long ownerId, Pageable pageable);
+    List<Booking> findByBookerIdAndEndBeforeOrderByStartDesc(Long bookerId, LocalDateTime end, Pageable pageable);
 
-    @Query("SELECT CASE WHEN COUNT(b) > 0 THEN true ELSE false END " +
-            "FROM Booking b " +
-            "WHERE b.item.id = :itemId " +
-            "AND b.status = 'APPROVED' " +
-            "AND (:start < b.end AND :end > b.start)")
-    boolean existsApprovedBookingForItemInPeriod(@Param("itemId") Long itemId,
-                                                 @Param("start") LocalDateTime start,
-                                                 @Param("end") LocalDateTime end);
-
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.booker.id = :bookerId " +
-            "AND b.start <= :now AND b.end >= :now " +
-            "ORDER BY b.start DESC")
-    List<Booking> findCurrentByBookerId(@Param("bookerId") Long bookerId,
-                                        @Param("now") LocalDateTime now,
-                                        Pageable pageable);
-
-    List<Booking> findByBookerIdAndEndBeforeOrderByStartDesc(Long bookerId, LocalDateTime now, Pageable pageable);
-
-    List<Booking> findByBookerIdAndStartAfterOrderByStartDesc(Long bookerId, LocalDateTime now, Pageable pageable);
+    List<Booking> findByBookerIdAndStartAfterOrderByStartDesc(Long bookerId, LocalDateTime start, Pageable pageable);
 
     List<Booking> findByBookerIdAndStatusOrderByStartDesc(Long bookerId, BookingStatus status, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.item.owner.id = :ownerId " +
-            "AND b.start <= :now AND b.end >= :now " +
-            "ORDER BY b.start DESC")
-    List<Booking> findCurrentByOwnerId(@Param("ownerId") Long ownerId,
-                                       @Param("now") LocalDateTime now,
-                                       Pageable pageable);
+    List<Booking> findByItemOwnerIdOrderByStartDesc(Long ownerId, Pageable pageable);
 
-    List<Booking> findByItemOwnerIdAndEndBeforeOrderByStartDesc(Long ownerId, LocalDateTime now, Pageable pageable);
+    List<Booking> findByItemOwnerIdAndEndBeforeOrderByStartDesc(Long ownerId, LocalDateTime end, Pageable pageable);
 
-    List<Booking> findByItemOwnerIdAndStartAfterOrderByStartDesc(Long ownerId, LocalDateTime now, Pageable pageable);
+    List<Booking> findByItemOwnerIdAndStartAfterOrderByStartDesc(Long ownerId, LocalDateTime start, Pageable pageable);
 
     List<Booking> findByItemOwnerIdAndStatusOrderByStartDesc(Long ownerId, BookingStatus status, Pageable pageable);
-
-    Optional<Booking> findFirstByItemIdAndEndBeforeAndStatusOrderByEndDesc(
-            Long itemId, LocalDateTime now, BookingStatus status);
-
-    Optional<Booking> findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
-            Long itemId, LocalDateTime now, BookingStatus status);
 
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
             "WHERE b.booker.id = :userId " +
@@ -67,6 +36,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                               @Param("itemId") Long itemId,
                               @Param("currentTime") LocalDateTime currentTime);
 
-    List<Booking> findByItemIdIn(List<Long> itemIds);
+    Optional<Booking> findFirstByItemIdAndEndBeforeAndStatusOrderByEndDesc(
+            Long itemId, LocalDateTime end, BookingStatus status);
 
+    Optional<Booking> findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(
+            Long itemId, LocalDateTime start, BookingStatus status);
+
+    List<Booking> findByItemIdIn(List<Long> itemIds);// Дополнительные методы для поиска
+
+
+
+    List<Booking> findByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(Long bookerId, LocalDateTime now, LocalDateTime now1, Pageable pageable);
+
+    List<Booking> findByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(Long ownerId, LocalDateTime now, LocalDateTime now1, Pageable pageable);
 }
