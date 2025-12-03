@@ -1,6 +1,7 @@
 package ru.practicum.shareit.gateway.client;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.practicum.shareit.gateway.converter.DtoConverter;
@@ -19,31 +20,31 @@ public class BookingClient extends BaseClient {
         this.dtoConverter = dtoConverter;
     }
 
-    public Object createBooking(BookingDto bookingDto, Long bookerId) {
+    public ResponseEntity<Object> createBooking(BookingDto bookingDto, Long bookerId) {
         String path = "/bookings";
         Map<String, Object> requestBody = dtoConverter.toServerBookingDto(bookingDto);
         log.debug("Creating booking for user {}: {}", bookerId, requestBody);
-        return post(path, bookerId, requestBody).getBody();
+        return post(path, bookerId, requestBody);
     }
 
-    public Object approveBooking(Long bookingId, Long ownerId, boolean approved) {
+    public ResponseEntity<Object> approveBooking(Long bookingId, Long ownerId, boolean approved) {
         String path = "/bookings/{bookingId}?approved={approved}";
         Map<String, Object> parameters = Map.of(
                 "bookingId", bookingId,
                 "approved", approved
         );
         log.debug("Approving booking {} by user {}: approved={}", bookingId, ownerId, approved);
-        return patch(path, ownerId, parameters, null).getBody();
+        return patch(path, ownerId, parameters, null);
     }
 
-    public Object getBookingById(Long bookingId, Long userId) {
+    public ResponseEntity<Object> getBookingById(Long bookingId, Long userId) {
         String path = "/bookings/{bookingId}";
         Map<String, Object> parameters = Map.of("bookingId", bookingId);
         log.debug("Getting booking {} for user {}", bookingId, userId);
-        return get(path, userId, parameters).getBody();
+        return get(path, userId, parameters);
     }
 
-    public Object getBookingsByBooker(Long bookerId, String state, int from, int size) {
+    public ResponseEntity<Object> getBookingsByBooker(Long bookerId, String state, int from, int size) {
         String path = "/bookings?state={state}&from={from}&size={size}";
         Map<String, Object> parameters = Map.of(
                 "state", state,
@@ -51,10 +52,10 @@ public class BookingClient extends BaseClient {
                 "size", size
         );
         log.debug("Getting bookings for booker {} with state {}", bookerId, state);
-        return get(path, bookerId, parameters).getBody();
+        return get(path, bookerId, parameters);
     }
 
-    public Object getBookingsByOwner(Long ownerId, String state, int from, int size) {
+    public ResponseEntity<Object> getBookingsByOwner(Long ownerId, String state, int from, int size) {
         String path = "/bookings/owner?state={state}&from={from}&size={size}";
         Map<String, Object> parameters = Map.of(
                 "state", state,
@@ -62,6 +63,6 @@ public class BookingClient extends BaseClient {
                 "size", size
         );
         log.debug("Getting bookings for owner {} with state {}", ownerId, state);
-        return get(path, ownerId, parameters).getBody();
+        return get(path, ownerId, parameters);
     }
 }

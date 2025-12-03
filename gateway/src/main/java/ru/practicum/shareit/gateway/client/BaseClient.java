@@ -121,7 +121,7 @@ public class BaseClient {
                 response = rest.exchange(url, method, requestEntity, Object.class);
             }
 
-            log.debug("Response from {}: {}", url, response.getStatusCode());
+            log.debug("Success response from {}: {}", url, response.getStatusCode());
             return response;
 
         } catch (HttpStatusCodeException e) {
