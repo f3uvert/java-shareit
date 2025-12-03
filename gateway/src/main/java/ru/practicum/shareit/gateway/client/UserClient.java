@@ -51,6 +51,6 @@ public class UserClient extends BaseClient {
         String path = "/users/{userId}";
         Map<String, Object> parameters = Map.of("userId", userId);
         log.debug("Deleting user: {}", userId);
-        return delete(path, parameters.size());
+        return delete(path, null, parameters);
     }
 }
