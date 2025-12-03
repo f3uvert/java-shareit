@@ -32,25 +32,20 @@ public class BookingServiceImpl implements BookingService {
     public BookingResponseDto createBooking(BookingDto bookingDto, Long bookerId) {
         log.info("Creating booking for item {} by user {}", bookingDto.getItemId(), bookerId);
 
-        // Проверяем пользователя
         User booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
-        // Проверяем предмет
         Item item = itemRepository.findById(bookingDto.getItemId())
                 .orElseThrow(() -> new NoSuchElementException("Item not found with id: " + bookingDto.getItemId()));
 
-        // Проверяем доступность
         if (!item.getAvailable()) {
             throw new ValidationException("Item is not available for booking");
         }
 
-        // Проверяем, что пользователь не владелец
         if (item.getOwner().getId().equals(bookerId)) {
             throw new NoSuchElementException("Owner cannot book their own item");
         }
 
-        // Валидация дат
         LocalDateTime start = bookingDto.getStart();
         LocalDateTime end = bookingDto.getEnd();
         LocalDateTime now = LocalDateTime.now();
@@ -71,7 +66,6 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("End date must be in future");
         }
 
-        // Создаем бронирование
         Booking booking = new Booking();
         booking.setStart(start);
         booking.setEnd(end);
@@ -82,7 +76,6 @@ public class BookingServiceImpl implements BookingService {
         Booking savedBooking = bookingRepository.save(booking);
         log.info("Booking created with id: {}", savedBooking.getId());
 
-        // Конвертируем в BookingResponseDto
         return toBookingResponseDto(savedBooking);
     }
 
@@ -94,17 +87,14 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
-        // Проверяем, что пользователь - владелец предмета
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
-            throw new NoSuchElementException("Only item owner can approve booking");
+            throw new SecurityException("Only item owner can approve booking");
         }
 
-        // Проверяем статус
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new ValidationException("Booking is not in WAITING status");
         }
 
-        // Устанавливаем новый статус
         booking.setStatus(approved ? BookingStatus.APPROVED : BookingStatus.REJECTED);
 
         Booking updatedBooking = bookingRepository.save(booking);
@@ -120,7 +110,6 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found with id: " + bookingId));
 
-        // Проверяем права доступа
         boolean isBooker = booking.getBooker().getId().equals(userId);
         boolean isOwner = booking.getItem().getOwner().getId().equals(userId);
 
@@ -135,7 +124,6 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDto> getBookingsByBooker(Long bookerId, String state, Pageable pageable) {
         log.info("Getting bookings for booker {} with state {}", bookerId, state);
 
-        // Проверяем пользователя
         userRepository.findById(bookerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + bookerId));
 
@@ -177,7 +165,6 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingResponseDto> getBookingsByOwner(Long ownerId, String state, Pageable pageable) {
         log.info("Getting bookings for owner {} with state {}", ownerId, state);
 
-        // Проверяем пользователя
         userRepository.findById(ownerId)
                 .orElseThrow(() -> new NoSuchElementException("User not found with id: " + ownerId));
 
@@ -222,13 +209,11 @@ public class BookingServiceImpl implements BookingService {
         dto.setEnd(booking.getEnd());
         dto.setStatus(booking.getStatus());
 
-        // Создаем BookingItemDto
         BookingResponseDto.BookingItemDto itemDto = new BookingResponseDto.BookingItemDto();
         itemDto.setId(booking.getItem().getId());
         itemDto.setName(booking.getItem().getName());
         dto.setItem(itemDto);
 
-        // Создаем BookingUserDto
         BookingResponseDto.BookingUserDto userDto = new BookingResponseDto.BookingUserDto();
         userDto.setId(booking.getBooker().getId());
         userDto.setName(booking.getBooker().getName());
