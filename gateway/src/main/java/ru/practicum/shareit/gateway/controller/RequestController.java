@@ -16,8 +16,8 @@ public class RequestController {
     private final ru.practicum.shareit.gateway.client.RequestClient requestClient;
 
     @PostMapping
-    public Object createRequest(@Valid @RequestBody ru.practicum.shareit.gateway.dto.ItemRequestDto itemRequestDto,
-                                @RequestHeader("X-Sharer-User-Id") Long requestorId) {
+    public ResponseEntity<Object> createRequest(@Valid @RequestBody ru.practicum.shareit.gateway.dto.ItemRequestDto itemRequestDto,
+                                                @RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("Gateway: POST /requests | User-ID: {}", requestorId);
         return requestClient.createRequest(itemRequestDto, requestorId);
     }
@@ -25,7 +25,11 @@ public class RequestController {
     @GetMapping
     public ResponseEntity<Object> getRequestsByRequestor(@RequestHeader("X-Sharer-User-Id") Long requestorId) {
         log.info("Gateway: GET /requests | User-ID: {}", requestorId);
-        return (ResponseEntity<Object>) requestClient.getRequestsByRequestor(requestorId);
+        ResponseEntity<Object> response = requestClient.getRequestsByRequestor(requestorId);
+        log.info("Gateway: Response type: {}, status: {}",
+                response.getBody() != null ? response.getBody().getClass() : "null",
+                response.getStatusCode());
+        return response;
     }
 
     @GetMapping("/all")
@@ -33,13 +37,13 @@ public class RequestController {
                                                  @RequestParam(defaultValue = "0") int from,
                                                  @RequestParam(defaultValue = "10") int size) {
         log.info("Gateway: GET /requests/all | From: {}, Size: {}", from, size);
-        return (ResponseEntity<Object>) requestClient.getAllRequests(userId, from, size);
+        return requestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getRequestById(@PathVariable Long requestId,
                                                  @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Gateway: GET /requests/{}", requestId);
-        return (ResponseEntity<Object>) requestClient.getRequestById(requestId, userId);
+        return requestClient.getRequestById(requestId, userId);
     }
 }

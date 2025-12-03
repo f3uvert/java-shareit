@@ -20,36 +20,33 @@ public class RequestClient extends BaseClient {
         this.dtoConverter = dtoConverter;
     }
 
-    public Object createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
+    public ResponseEntity<Object> createRequest(ItemRequestDto itemRequestDto, Long requestorId) {
         String path = "/requests";
         Map<String, Object> requestBody = dtoConverter.toServerItemRequestDto(itemRequestDto);
         log.debug("Creating request for user {}", requestorId);
-        return post(path, requestorId, requestBody).getBody();
+        return post(path, requestorId, requestBody);
     }
 
-    public Object getRequestsByRequestor(Long requestorId) {
+    public ResponseEntity<Object> getRequestsByRequestor(Long requestorId) {
         String path = "/requests";
         log.debug("Getting requests for requestor {}", requestorId);
-        ResponseEntity<Object> response = get(path, requestorId);
-        return response.getBody();
+        return get(path, requestorId);
     }
 
-    public Object getAllRequests(Long userId, int from, int size) {
+    public ResponseEntity<Object> getAllRequests(Long userId, int from, int size) {
         String path = "/requests/all?from={from}&size={size}";
         Map<String, Object> parameters = Map.of(
                 "from", from,
                 "size", size
         );
         log.debug("Getting all requests for user {}", userId);
-        ResponseEntity<Object> response = get(path, userId, parameters);
-        return response.getBody();
+        return get(path, userId, parameters);
     }
 
-    public Object getRequestById(Long requestId, Long userId) {
+    public ResponseEntity<Object> getRequestById(Long requestId, Long userId) {
         String path = "/requests/{requestId}";
         Map<String, Object> parameters = Map.of("requestId", requestId);
         log.debug("Getting request {} for user {}", requestId, userId);
-        ResponseEntity<Object> response = get(path, userId, parameters);
-        return response.getBody();
+        return get(path, userId, parameters);
     }
 }
